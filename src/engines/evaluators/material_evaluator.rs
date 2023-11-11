@@ -1,5 +1,3 @@
-use std::f64::EPSILON;
-
 use crate::chess_server::types::{Color, Piece};
 use crate::engines::engine_traits::*;
 

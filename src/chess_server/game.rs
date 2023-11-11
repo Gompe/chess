@@ -25,6 +25,10 @@ impl<'a, 'b> GameManager<'a, 'b> {
         }
     }
 
+    pub fn get_turn(&self) -> Color {
+        self.chess_board.get_turn_color()
+    }
+
     pub fn is_game_ongoing(&self) -> bool {
         self.game_status == GameStatus::Ongoing
     }

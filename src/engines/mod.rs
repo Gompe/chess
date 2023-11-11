@@ -3,8 +3,8 @@ pub mod engine_traits;
 
 // Searchers
 pub mod min_max_search;
+pub mod alpha_beta_search;
+
 
 // Evaluators
-pub mod linear_evaluator;
-pub mod material_evaluator;
-pub mod positional_evaluator;
+pub mod evaluators;

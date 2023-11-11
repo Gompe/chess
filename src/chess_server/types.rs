@@ -19,8 +19,8 @@ pub const WHITE_KING : ColorPiece = ColorPiece {color : Color::White, piece : Pi
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Coordinate {
-    row: i32,
-    col: i32,
+    pub row: i32,
+    pub col: i32,
 }
 
 impl Coordinate {

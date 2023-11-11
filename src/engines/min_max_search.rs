@@ -42,18 +42,9 @@ impl<E: Evaluator> MinMaxSearcher<E> {
                         Color::Black => evals.min_by_key(|tup| tup.0).unwrap(),
                     }
                 },
-                GameStatus::BlackWon => {
-                    println!("Arrived at Black Won.");
-                    (EVAL_BLACK_WON, None)
-                }
-                GameStatus::WhiteWon => {
-                    println!("Arrived at White Won.");
-                    (EVAL_WHITE_WON, None) 
-                }
-                GameStatus::Draw => {
-                    println!("Arrived at Draw.");
-                    (EVAL_DRAW, None)
-                }
+                GameStatus::BlackWon => (EVAL_BLACK_WON, None),
+                GameStatus::WhiteWon => (EVAL_WHITE_WON, None),
+                GameStatus::Draw => (EVAL_DRAW, None)
             }
         }
     }
