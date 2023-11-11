@@ -1,120 +1,51 @@
+use engines::linear_evaluator::LinearEvaluator;
+use engines::positional_evaluator::PositionalEvaluator;
+use engines::random_engine::RandomEngine;
+use engines::engine_traits::SearcherEngine;
+use engines::material_evaluator::MaterialEvaluator;
+use engines::min_max_search::MinMaxSearcher;
+
+use chess_server::game::GameManager;
 
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-enum Color {
-    White,
-    Black
-}
-
-impl Color {
-    fn to_str(color : &Color) -> String {
-        match color {
-            Self::White => String::from("W"),
-            Self::Black => String::from("B")
-        }
-    }
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum Piece {
-    Pawn,
-    Bishop,
-    Knight,
-    Rook,
-    Queen, 
-    King
-}
-
-impl Piece {
-    pub fn to_str(piece : &Piece) -> String {
-        match piece {
-            Self::Pawn => String::from("P"),
-            Self::Bishop => String::from("B"),
-            Self::Knight => String::from("K"),
-            Self::Rook => String::from("R"),
-            Self::Queen => String::from("Q"),
-            Self::King => String::from("K")
-        }
-    }
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct ColorPiece {
-    color : Color,
-    piece : Piece
-}
-
-impl ColorPiece {
-    pub fn to_str(maybe_color_piece : &Option<ColorPiece>) -> String {
-        match maybe_color_piece {
-            None => String::from("  "),
-            Some(color_piece) => Color::to_str(&color_piece.color) + &Piece::to_str(&color_piece.piece)
-        }
-    }
-}
-
-pub const BLACK_PAWN : ColorPiece = ColorPiece {color : Color::Black, piece : Piece::Pawn }; 
-pub const BLACK_BISHOP : ColorPiece = ColorPiece {color : Color::Black, piece : Piece::Bishop }; 
-pub const BLACK_KNIGH : ColorPiece = ColorPiece {color : Color::Black, piece : Piece::Knight }; 
-pub const BLACK_ROOK : ColorPiece = ColorPiece {color : Color::Black, piece : Piece::Rook }; 
-pub const BLACK_QUEEN : ColorPiece = ColorPiece {color : Color::Black, piece : Piece::Queen }; 
-pub const BLACK_KING : ColorPiece = ColorPiece {color : Color::Black, piece : Piece::King }; 
-
-pub const WHITE_BISHOP : ColorPiece = ColorPiece {color : Color::White, piece : Piece::Bishop }; 
-pub const WHITE_KNIGH : ColorPiece = ColorPiece {color : Color::White, piece : Piece::Knight }; 
-pub const WHITE_ROOK : ColorPiece = ColorPiece {color : Color::White, piece : Piece::Rook }; 
-pub const WHITE_PAWN : ColorPiece = ColorPiece {color : Color::White, piece : Piece::Pawn }; 
-pub const WHITE_QUEEN : ColorPiece = ColorPiece {color : Color::White, piece : Piece::Queen }; 
-pub const WHITE_KING : ColorPiece = ColorPiece {color : Color::White, piece : Piece::King }; 
-
-pub struct ChessBoard {
-    board : [Option<ColorPiece>; 64],
-    turn_color : Color
-}
-
-impl ChessBoard {
-    pub fn starting_position() -> ChessBoard {
-        let board : [Option<ColorPiece>; 64] = [
-            Some(BLACK_ROOK), Some(BLACK_KNIGH), Some(BLACK_BISHOP), Some(BLACK_QUEEN), Some(BLACK_KING), Some(BLACK_BISHOP), Some(BLACK_KNIGH), Some(BLACK_ROOK),
-            Some(BLACK_PAWN), Some(BLACK_PAWN), Some(BLACK_PAWN), Some(BLACK_PAWN), Some(BLACK_PAWN), Some(BLACK_PAWN), Some(BLACK_PAWN), Some(BLACK_PAWN),
-            None, None, None, None, None, None, None, None, 
-            None, None, None, None, None, None, None, None, 
-            None, None, None, None, None, None, None, None, 
-            None, None, None, None, None, None, None, None, 
-            Some(WHITE_PAWN), Some(WHITE_PAWN), Some(WHITE_PAWN), Some(WHITE_PAWN), Some(WHITE_PAWN), Some(WHITE_PAWN), Some(WHITE_PAWN), Some(WHITE_PAWN),
-            Some(WHITE_ROOK), Some(WHITE_KNIGH), Some(WHITE_BISHOP), Some(WHITE_QUEEN), Some(WHITE_KING), Some(WHITE_BISHOP), Some(WHITE_KNIGH), Some(WHITE_ROOK),
-        ];
-
-        ChessBoard { board, turn_color: Color::White }
-    }
-
-    pub fn print_board(self) {
-        for _ in 0..8 {
-            print!(" ----");
-        }
-
-        print!("\n");
-        for (num, maybe_color_piece) in self.board.iter().enumerate() {
-            print!("| {} ", ColorPiece::to_str(maybe_color_piece));
-            if num % 8 == 7 {
-                print!("|\n");
-                for _ in 0..8 {
-                    print!("|----");
-                }
-    
-                print!("|\n");
-            }
-
-        }
-    }
-}
-
-
+mod chess_server;
+mod engines;
 
 fn main() {
-    println!("Hello, world!");
 
-    let board = ChessBoard::starting_position();
-    board.print_board();
+    let eval_white = LinearEvaluator::new(
+        MaterialEvaluator::new(),
+        PositionalEvaluator::new(),
+        [1., 0.1]
+    );
 
+    // let eval_white = MaterialEvaluator::new();
+
+    let player_white = SearcherEngine::new(
+        eval_white, 
+        MinMaxSearcher::new(3)
+    );
+
+
+    let player_black = SearcherEngine::new(
+        MaterialEvaluator::new(), 
+        MinMaxSearcher::new(2)
+    );
+
+    let mut game_manager = GameManager::new(
+        &player_white, &player_black
+    );
+
+    
+    let max_iter = 100;
+    let mut num_iter = 1;
+    while game_manager.is_game_ongoing() && num_iter < max_iter {
+        game_manager.show();
+        game_manager.make_move();
+        println!("\n");
+
+        num_iter += 1;
+    }
+
+    game_manager.show();
 }
