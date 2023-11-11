@@ -8,6 +8,7 @@ use crate::chess_server::types::Move;
 
 use ordered_float::OrderedFloat;
 
+const INF: OrderedFloat<f64> = OrderedFloat(1000.);
 pub struct MinMaxSearcher<E: Evaluator> {
     max_depth: usize,
     phantom: PhantomData<E>,
@@ -30,16 +31,40 @@ impl<E: Evaluator> MinMaxSearcher<E> {
                 GameStatus::Ongoing => {
                     let color = chess_board.get_turn_color();
                     let allowed_moves = chess_board.get_allowed_moves(color);
-                    let evals = allowed_moves.iter().map(
-                        |move_| (
-                            self.search_impl(&chess_board.next_state(move_), evaluator, depth + 1).0,
-                            Some(*move_)
-                        )
-                    );
 
-                    match color {
-                        Color::White => evals.max_by_key(|tup| tup.0).unwrap(),
-                        Color::Black => evals.min_by_key(|tup| tup.0).unwrap(),
+                    if color == Color::White {
+                        // Maximizing Player
+                        let mut value = -INF;
+                        let mut best_move: Option<Move> = None;
+                        
+                        for move_ in allowed_moves {
+                            let search_result = self.search_impl(
+                                &chess_board.next_state(&move_), &evaluator, depth + 1
+                            );
+                            
+                            if search_result.0 > value {
+                                value = search_result.0;
+                                best_move = Some(move_);
+                            }
+                        }
+                        return (value, best_move);
+                    } else {
+                        // Minimizing Player
+                        let mut value = INF;
+                        let mut best_move: Option<Move> = None;
+                        
+                        for move_ in allowed_moves {
+                            let search_result = self.search_impl(
+                                &chess_board.next_state(&move_), &evaluator, depth + 1
+                            );
+                            
+                            if search_result.0 < value {
+                                value = search_result.0;
+                                best_move = Some(move_);
+                            }
+                        }
+
+                        return (value, best_move);
                     }
                 },
                 GameStatus::BlackWon => (EVAL_BLACK_WON, None),
