@@ -25,6 +25,11 @@ impl<'a, 'b> GameManager<'a, 'b> {
         }
     }
 
+    pub fn get_board(&self) -> ChessBoard {
+        self.chess_board.clone()
+    }
+
+
     pub fn get_turn(&self) -> Color {
         self.chess_board.get_turn_color()
     }

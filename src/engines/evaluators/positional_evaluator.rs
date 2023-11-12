@@ -20,6 +20,12 @@ impl PositionalEvaluator {
 }
 
 impl Evaluator for PositionalEvaluator {
+    
+    fn get_name(&self) -> String {
+        "PositionalEvaluator".to_string()
+    }
+
+    #[inline(always)]
     fn evaluate(&self, chess_board: &ChessBoard) -> OrderedFloat<f64> {
         let mut eval = 0.;
 

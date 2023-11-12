@@ -1,4 +1,7 @@
-use core::time;
+mod chess_server;
+mod engines;
+mod bitboard;
+
 use std::time::Instant;
 
 use engines::evaluators::LinearEvaluator;
@@ -13,12 +16,16 @@ use engines::iterative_deepening::IterativeDeepening;
 
 use chess_server::game::GameManager;
 
+use crate::chess_server::game;
 use crate::chess_server::types::Color;
 use crate::engines::alpha_beta_search::AlphaBetaSearcher;
+use crate::engines::engine_traits::Evaluator;
+use crate::engines::evaluators::DynamicEvaluator;
+use crate::engines::evaluators::KingSafetyEvaluator;
+use crate::engines::evaluators::StructureEvaluator;
 
+use bitboard::basic_bitboard;
 
-mod chess_server;
-mod engines;
 
 fn main() {
 
@@ -30,17 +37,25 @@ fn main() {
     //     )
     // );
 
-    let eval_white = CacheEvaluator::new(LinearEvaluator::new(
-            MaterialEvaluator::new(),
-            PositionalEvaluator::new(),
-            [1., 0.1]
-    ));
+    // let eval_white = CacheEvaluator::new(LinearEvaluator::new(
+    //         MaterialEvaluator::new(),
+    //         PositionalEvaluator::new(),
+    //         [1.0, 0.1]
+    // ));
 
-    let eval_black = CacheEvaluator::new(LinearEvaluator::new(
-            MaterialEvaluator::new(),
-            PositionalEvaluator::new(),
-            [1., 0.1]
-    ));
+    let eval_black = MaterialEvaluator::new();
+
+    let eval_white = CacheEvaluator::new(
+        LinearEvaluator::new(
+            LinearEvaluator::new(
+                MaterialEvaluator::new(),
+                KingSafetyEvaluator::new(),
+                [1.0, 0.01]
+            ),
+            StructureEvaluator::new(),
+            [1.0, 0.01],
+        )
+    );
 
     // let eval_white = MaterialEvaluator::new();
 
@@ -52,7 +67,7 @@ fn main() {
 
     let player_black = SearcherEngine::new(
         eval_black, 
-        MinMaxSearcher::new(3)
+        IterativeDeepening::new(2)
     );
 
     let mut game_manager = GameManager::new(
@@ -66,9 +81,21 @@ fn main() {
     let max_iter = 100;
     let mut num_iter = 1;
 
+
+    let eval_callbacks: Vec<Box<dyn Evaluator>> = vec![
+        Box::new(DynamicEvaluator::new()),
+        Box::new(KingSafetyEvaluator::new()),
+        Box::new(MaterialEvaluator::new()),
+        Box::new(PositionalEvaluator::new()),
+    ];
+
     while game_manager.is_game_ongoing() && num_iter < max_iter {
         
         game_manager.show();
+        println!("Evaluations:");
+        for evaluator in &eval_callbacks {
+            println!("Score: {} \t Evaluator: {}", evaluator.evaluate(&game_manager.get_board()), evaluator.get_name());
+        }
 
         let start_timestamp = Instant::now();
         game_manager.make_move();
@@ -77,6 +104,9 @@ fn main() {
 
         println!("Time: {}", timedelta.as_millis());
         println!("\n");
+
+        let separator: String = std::iter::repeat('-').take(60).collect();
+        println!("{}", separator);
 
         match game_manager.get_turn() {
             Color::White => total_duration_black += timedelta.as_nanos(),

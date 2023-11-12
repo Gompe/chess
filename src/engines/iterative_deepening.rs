@@ -165,7 +165,7 @@ impl<E: Evaluator> IterativeDeepening<E> {
                             &chess_board.next_state(&move_), &evaluator, depth + 1, alpha, beta, max_depth
                         );
                         
-                        if search_result.0 < value || best_move == None {
+                        if search_result.0 < value {
                             value = search_result.0;
                             best_move = Some(move_);
                         }
@@ -178,7 +178,7 @@ impl<E: Evaluator> IterativeDeepening<E> {
                             &chess_board.next_state(&move_), &evaluator, depth + 1, alpha, beta, max_depth
                         );
                         
-                        if search_result.0 < value {
+                        if search_result.0 < value || best_move == None {
                             value = search_result.0;
                             best_move = Some(move_);
                         }

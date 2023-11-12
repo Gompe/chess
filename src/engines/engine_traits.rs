@@ -9,7 +9,11 @@ pub const EVAL_BLACK_WON: OrderedFloat<f64> = OrderedFloat(-1000.);
 pub const EVAL_DRAW: OrderedFloat<f64> = OrderedFloat(0.);
 
 pub trait Evaluator {
+
     fn evaluate(&self, chess_board: &ChessBoard) -> OrderedFloat<f64>;
+    
+    // As method to allow for dynamic dispatch   
+    fn get_name(&self) -> String;
 }
 
 pub trait Searcher<E: Evaluator> {

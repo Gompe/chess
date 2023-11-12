@@ -20,6 +20,12 @@ impl<E: Evaluator> CacheEvaluator<E> {
 }
 
 impl<E: Evaluator> Evaluator for CacheEvaluator<E> {
+
+    fn get_name(&self) -> String {
+        format!("CacheEvaluator({})", self.evaluator.get_name())
+    }
+
+    #[inline(always)]
     fn evaluate(&self, chess_board: &ChessBoard) -> OrderedFloat<f64> {
 
         if let Some(&eval) = self.cache.borrow().get_key_value(chess_board) {
