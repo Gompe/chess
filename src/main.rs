@@ -9,6 +9,7 @@ use engines::evaluators::CacheEvaluator;
 use engines::random_engine::RandomEngine;
 use engines::engine_traits::SearcherEngine;
 use engines::min_max_search::MinMaxSearcher;
+use engines::iterative_deepening::IterativeDeepening;
 
 use chess_server::game::GameManager;
 
@@ -29,29 +30,29 @@ fn main() {
     //     )
     // );
 
-    let eval_white = LinearEvaluator::new(
+    let eval_white = CacheEvaluator::new(LinearEvaluator::new(
             MaterialEvaluator::new(),
             PositionalEvaluator::new(),
             [1., 0.1]
-    );
+    ));
 
-    let eval_black = LinearEvaluator::new(
+    let eval_black = CacheEvaluator::new(LinearEvaluator::new(
             MaterialEvaluator::new(),
             PositionalEvaluator::new(),
             [1., 0.1]
-    );
+    ));
 
     // let eval_white = MaterialEvaluator::new();
 
     let player_white = SearcherEngine::new(
         eval_white, 
-        MinMaxSearcher::new(3)
+        IterativeDeepening::new(5)
     );
 
 
-    let player_black: SearcherEngine<LinearEvaluator<MaterialEvaluator, PositionalEvaluator>, MinMaxSearcher<LinearEvaluator<MaterialEvaluator, PositionalEvaluator>>> = SearcherEngine::new(
+    let player_black = SearcherEngine::new(
         eval_black, 
-        MinMaxSearcher::new(2)
+        MinMaxSearcher::new(3)
     );
 
     let mut game_manager = GameManager::new(

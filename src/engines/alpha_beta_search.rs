@@ -54,7 +54,7 @@ impl<E: Evaluator> AlphaBetaSearcher<E> {
                                 &chess_board.next_state(&move_), &evaluator, depth + 1, alpha, beta
                             );
                             
-                            if search_result.0 > value {
+                            if search_result.0 > value || best_move == None {
                                 value = search_result.0;
                                 best_move = Some(move_);
                             }
@@ -79,7 +79,7 @@ impl<E: Evaluator> AlphaBetaSearcher<E> {
                                 &chess_board.next_state(&move_), &evaluator, depth + 1, alpha, beta
                             );
                             
-                            if search_result.0 < value {
+                            if search_result.0 < value || best_move == None {
                                 value = search_result.0;
                                 best_move = Some(move_);
                             }

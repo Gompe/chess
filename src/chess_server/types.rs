@@ -152,6 +152,22 @@ pub enum Move {
     NormalMove(MoveCoordinates)
 }
 
+impl Move {
+    pub fn get_current_square(&self) -> Coordinate {
+        match *self {
+            Move::PromotionMove(move_coords, _) => move_coords.current_square,
+            Move::NormalMove(move_coords) => move_coords.current_square
+        }
+    }
+
+    pub fn get_next_square(&self) -> Coordinate {
+        match *self {
+            Move::PromotionMove(move_coords, _) => move_coords.next_square,
+            Move::NormalMove(move_coords) => move_coords.next_square
+        }
+    }
+}
+
 impl fmt::Display for Move {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
@@ -289,11 +305,6 @@ impl ChessBoard {
 impl ChessBoard {
     pub fn next_state(&self, move_ : &Move) -> ChessBoard {
         
-        let move_ = match move_ {
-            Move::NormalMove(move_coords) => move_coords,
-            _ => panic!()
-        };
-
         let mut next_board = self.clone();
 
         next_board.turn_color = match self.turn_color {
@@ -301,31 +312,32 @@ impl ChessBoard {
             Color::White => Color::Black
         };
 
-        let moved_piece = next_board.get_cell_content(&move_.current_square);
+        let next_piece = match move_ {
+            Move::NormalMove(_) => self.get_cell_content(&move_.get_current_square()),
+            Move::PromotionMove(_, piece) => Some(ColorPiece { color: self.turn_color, piece: *piece })
+        };
         
-        next_board.set_cell_content(&move_.current_square, None);
-        next_board.set_cell_content(&move_.next_square, moved_piece);
+        next_board.set_cell_content(&move_.get_current_square(), None);
+        next_board.set_cell_content(&move_.get_next_square(), next_piece);
 
         next_board
     }
 
     pub fn next_state_inplace(&mut self, move_ : &Move) {
-        let move_ = match move_ {
-            Move::NormalMove(move_coords) => move_coords,
-            _ => panic!()
-        };
+
         
+        let next_piece = match move_ {
+            Move::NormalMove(_) => self.get_cell_content(&move_.get_current_square()),
+            Move::PromotionMove(_, piece) => Some(ColorPiece { color: self.turn_color, piece: *piece })
+        };
         
         self.turn_color = match self.turn_color {
             Color::Black => Color::White,
             Color::White => Color::Black
         };
-        
-        let moved_piece = self.get_cell_content(&move_.current_square);
 
-        self.set_cell_content(&move_.current_square, None);
-        self.set_cell_content(&move_.next_square, moved_piece);
-
+        self.set_cell_content(&move_.get_current_square(), None);
+        self.set_cell_content(&move_.get_next_square(), next_piece);
     }
 }
 
