@@ -2,6 +2,8 @@ mod chess_server;
 mod engines;
 mod bitboard;
 
+mod modular_server;
+
 use std::time::Instant;
 
 use engines::evaluators::LinearEvaluator;
