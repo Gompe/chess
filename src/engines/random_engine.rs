@@ -4,6 +4,7 @@ use crate::chess_server::types::{ChessBoard, Move};
 use rand::{seq::SliceRandom, thread_rng, rngs::ThreadRng}; // 0.6.1
 use std::cell::RefCell;
 
+
 pub struct RandomEngine {
     rng: RefCell<ThreadRng>,
 }

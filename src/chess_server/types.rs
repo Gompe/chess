@@ -188,7 +188,7 @@ impl fmt::Display for Move {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct ChessBoard {
     board : [Option<ColorPiece>; 64],
     turn_color : Color

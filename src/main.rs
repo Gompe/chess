@@ -8,23 +8,25 @@ use engines::evaluators::LinearEvaluator;
 use engines::evaluators::PositionalEvaluator;
 use engines::evaluators::MaterialEvaluator;
 use engines::evaluators::CacheEvaluator;
+use engines::evaluators::CaptureEvaluator;
+
+use engines::searchers::MinMaxSearcher;
+use engines::searchers::AlphaBetaSearcher;
+use engines::searchers::IterativeDeepening;
+use engines::searchers::RepetitionAwareSearcher;
 
 use engines::random_engine::RandomEngine;
 use engines::engine_traits::SearcherEngine;
-use engines::min_max_search::MinMaxSearcher;
-use engines::iterative_deepening::IterativeDeepening;
+
 
 use chess_server::game::GameManager;
 
-use crate::chess_server::game;
 use crate::chess_server::types::Color;
-use crate::engines::alpha_beta_search::AlphaBetaSearcher;
 use crate::engines::engine_traits::Evaluator;
 use crate::engines::evaluators::DynamicEvaluator;
 use crate::engines::evaluators::KingSafetyEvaluator;
 use crate::engines::evaluators::StructureEvaluator;
 
-use bitboard::basic_bitboard;
 
 
 fn main() {
@@ -43,17 +45,15 @@ fn main() {
     //         [1.0, 0.1]
     // ));
 
-    let eval_black = MaterialEvaluator::new();
+    let eval_black = CaptureEvaluator::new(MaterialEvaluator::new());
 
     let eval_white = CacheEvaluator::new(
-        LinearEvaluator::new(
+        CaptureEvaluator::new(
             LinearEvaluator::new(
                 MaterialEvaluator::new(),
-                KingSafetyEvaluator::new(),
-                [1.0, 0.01]
-            ),
-            StructureEvaluator::new(),
-            [1.0, 0.01],
+                PositionalEvaluator::new(),
+                [1.0, 0.01],
+            )
         )
     );
 
@@ -61,14 +61,16 @@ fn main() {
 
     let player_white = SearcherEngine::new(
         eval_white, 
-        IterativeDeepening::new(5)
+        RepetitionAwareSearcher::new(5)
     );
 
 
     let player_black = SearcherEngine::new(
         eval_black, 
-        IterativeDeepening::new(2)
+        MinMaxSearcher::new(1)
     );
+
+    // let player_black = RandomEngine::new();
 
     let mut game_manager = GameManager::new(
         &player_white, &player_black

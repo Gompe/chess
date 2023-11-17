@@ -14,7 +14,7 @@ use crate::chess_server::types::Move;
 
 use ordered_float::OrderedFloat;
 
-use super::zobrist_hash::ZobristHashMap;
+use crate::engines::zobrist_hash::ZobristHashMap;
 
 const INF: OrderedFloat<f64> = OrderedFloat(1000.);
 
