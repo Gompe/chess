@@ -27,13 +27,14 @@ impl Evaluator for DynamicEvaluator {
         for (coordinate, content) in chess_board.iter_coordinates() {
             
             if let Some(content) = content {
-                let sign = match content.color {
+                let sign = match content.get_color() {
                     Color::White => 1.,
                     Color::Black => -1.,
                 };
 
                 for coord in chess_board.squares_attacked_by_piece(&coordinate) {
-                    let rad = (coord.row as f64 - 3.5).abs() + (coord.col as f64 - 3.5).abs();
+                    let (row, col) = coord.get_coordinates();
+                    let rad = (row as f64 - 3.5).abs() + (col as f64 - 3.5).abs();
                     eval += ((1.0 - rad) / 8.0).exp() * sign;
                 }
             }

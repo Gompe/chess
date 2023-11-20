@@ -54,12 +54,12 @@ impl Evaluator for MaterialEvaluator {
         for (_, content) in chess_board.iter_coordinates() {
             
             if let Some(content) = content {
-                let sign = match content.color {
+                let sign = match content.get_color() {
                     Color::White => 1.,
                     Color::Black => -1.,
                 };
 
-                let piece_value = match content.piece {
+                let piece_value = match content.get_piece() {
                     Piece::Pawn => self.value_pawn,
                     Piece::Bishop => self.value_bishop,
                     Piece::Knight => self.value_knight,

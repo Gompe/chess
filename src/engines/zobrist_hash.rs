@@ -3,7 +3,7 @@ use std::collections::hash_map::DefaultHasher;
 
 use std::hash::{Hash, Hasher};
 
-use crate::chess_server::types::{ChessBoard, Coordinate, ColorPiece, Color};
+use crate::chess_server::types::{ChessBoard, ColorPiece, Color};
 use crate::chess_server::types::{
     WHITE_KING,
     WHITE_QUEEN,
@@ -49,7 +49,7 @@ impl BoardHash {
     fn new(chess_board: &ChessBoard, zobrist_table: [u64; TABLE_SIZE]) -> BoardHash {
         let mut state: u64 = 0;
 
-        let make_indexer = |coordinate: Coordinate, content: ColorPiece| {
+        let make_indexer = |index: u8, content: ColorPiece| {
             let content_indexer = match content {
                 WHITE_KING => 0,
                 WHITE_QUEEN => 1,
@@ -65,7 +65,7 @@ impl BoardHash {
                 BLACK_PAWN => 11,
             };
 
-            return 1 + coordinate.to_indexer() * 12 + content_indexer 
+            return 1 + (index as usize) * 12 + content_indexer 
         };
 
         if chess_board.get_turn_color() == Color::White {
@@ -74,7 +74,7 @@ impl BoardHash {
 
         for (coordinate, content) in chess_board.iter_coordinates() {
             if let Some(content) = content {
-                state = state ^ zobrist_table[make_indexer(coordinate, content)];
+                state = state ^ zobrist_table[make_indexer(coordinate.get_index(), content)];
             }
         }
 

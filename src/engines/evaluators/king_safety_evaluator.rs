@@ -1,4 +1,4 @@
-use crate::chess_server::types::{Color, Coordinate};
+use crate::chess_server::types::{Color, Square};
 use crate::engines::engine_traits::*;
 
 use crate::chess_server::types::ChessBoard;
@@ -29,18 +29,22 @@ impl Evaluator for KingSafetyEvaluator {
         let coord_white_king = chess_board.find_king(Color::White);
         let coord_black_king = chess_board.find_king(Color::Black);
 
-        let dist = |c0: &Coordinate, c1: &Coordinate| -> f64 {
-            ((c0.row - c1.row).abs() + (c0.col - c1.col).abs()) as f64
+        let dist = |c0: &Square, c1: &Square| -> f64 {
+            let (row0, col0) = c0.get_coordinates();
+            let (row1, col1) = c1.get_coordinates();
+
+            ((row0 as i8 - row1 as i8).abs() + (col0 as i8 - col1 as i8).abs()) as f64
         };
 
         for (coordinate, content) in chess_board.iter_coordinates() {
             
             if let Some(content) = content {
-                match content.color {
+                match content.get_color() {
                     Color::White => {
                         let sign = 1.;
                         for coord in chess_board.squares_attacked_by_piece(&coordinate) {
-                            let rad = (coord.row as f64 - 3.5).abs() + (coord.col as f64 - 3.5).abs();
+                            let (row, col) = coord.get_coordinates();
+                            let rad = (row as f64 - 3.5).abs() + (col as f64 - 3.5).abs();
                             let distance_to_king = dist(&coord, &coord_black_king);
 
                             eval += ((1.0 - rad - 3. * distance_to_king) / 8.0).exp() * sign;
@@ -49,7 +53,8 @@ impl Evaluator for KingSafetyEvaluator {
                     Color::Black => {
                         let sign = -1.;
                         for coord in chess_board.squares_attacked_by_piece(&coordinate) {
-                            let rad = (coord.row as f64 - 3.5).abs() + (coord.col as f64 - 3.5).abs();
+                            let (row, col) = coord.get_coordinates();
+                            let rad = (row as f64 - 3.5).abs() + (col as f64 - 3.5).abs();
                             let distance_to_king = dist(&coord, &coord_white_king);
 
                             eval += ((1.0 - rad - 3. * distance_to_king) / 8.0).exp() * sign;

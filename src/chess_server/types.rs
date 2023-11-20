@@ -1,8 +1,6 @@
 use std::vec;
 use std::fmt;
 
-use std::slice::Iter;
-
 pub const BLACK_PAWN : ColorPiece = ColorPiece {color : Color::Black, piece : Piece::Pawn }; 
 pub const BLACK_BISHOP : ColorPiece = ColorPiece {color : Color::Black, piece : Piece::Bishop }; 
 pub const BLACK_KNIGHT : ColorPiece = ColorPiece {color : Color::Black, piece : Piece::Knight }; 
@@ -17,14 +15,171 @@ pub const WHITE_PAWN : ColorPiece = ColorPiece {color : Color::White, piece : Pi
 pub const WHITE_QUEEN : ColorPiece = ColorPiece {color : Color::White, piece : Piece::Queen }; 
 pub const WHITE_KING : ColorPiece = ColorPiece {color : Color::White, piece : Piece::King }; 
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct Coordinate {
-    pub row: i32,
-    pub col: i32,
+#[derive(Debug, PartialEq, Eq)]
+pub enum ChessStatus {
+    Ongoing,
+    WhiteWon,
+    BlackWon,
+    Draw,
 }
 
-impl Coordinate {
-    pub fn from_chess_notation(coordinate: [char; 2]) -> Option<Coordinate> {
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum Color {
+    White,
+    Black
+}
+
+impl Color {
+    pub fn to_str(&self) -> String {
+        match *self {
+            Self::White => String::from("W"),
+            Self::Black => String::from("B")
+        }
+    }
+}
+
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum Piece {
+    Pawn,
+    Bishop,
+    Knight,
+    Rook,
+    Queen, 
+    King
+}
+
+impl Piece {
+
+    pub fn to_str(&self) -> String {
+        match *self {
+            Self::Pawn => String::from("P"),
+            Self::Bishop => String::from("B"),
+            Self::Knight => String::from("N"),
+            Self::Rook => String::from("R"),
+            Self::Queen => String::from("Q"),
+            Self::King => String::from("K")
+        }
+    }
+}
+
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub struct ColorPiece {
+    color : Color,
+    piece : Piece
+}
+
+impl ColorPiece {
+
+    #[inline(always)]
+    pub fn get_color(&self) -> Color {
+        self.color
+    }
+
+    #[inline(always)]
+    pub fn get_piece(&self) -> Piece {
+        self.piece
+    }
+
+    pub fn to_str(maybe_color_piece : &Option<ColorPiece>) -> String {
+        match *maybe_color_piece {
+            None => String::from(" "),
+
+            Some(BLACK_KING) => String::from("k"),
+            Some(BLACK_QUEEN) => String::from("q"),
+            Some(BLACK_ROOK) => String::from("r"),
+            Some(BLACK_BISHOP) => String::from("b"),
+            Some(BLACK_KNIGHT) => String::from("n"),
+            Some(BLACK_PAWN) => String::from("p"),
+
+            Some(WHITE_KING) => String::from("K"),
+            Some(WHITE_QUEEN) => String::from("Q"),
+            Some(WHITE_ROOK) => String::from("R"),
+            Some(WHITE_BISHOP) => String::from("B"),
+            Some(WHITE_KNIGHT) => String::from("N"),
+            Some(WHITE_PAWN) => String::from("P"),
+            
+        }
+
+        // match maybe_color_piece {
+        //     None => String::from("  "),
+        //     Some(color_piece) => color_piece.color.to_str() + &color_piece.piece.to_str()
+        // }
+    }
+}
+
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub struct Square {
+    board_index: u8
+}
+
+impl Square {
+
+    #[inline(always)]
+    pub unsafe fn from_coordinates_unchecked(row: i8, col: i8) -> Self {
+        let board_index = (row * 8 + col) as u8;
+        Square { board_index }
+    }
+
+    #[inline(always)]
+    pub unsafe fn from_index_unchecked(index: i8) -> Self {
+        Square { board_index: index as u8 }
+    }
+
+    pub fn from_coordinates(row: i8, col: i8) -> Option<Self> {
+        if (row >= 0) && (row < 8) && (col >= 0) && (col < 8) 
+        {
+            unsafe {
+                Some(Self::from_coordinates_unchecked(row, col))
+            }
+        } else {    
+            None
+        }
+    }
+
+    pub fn from_index(index: i8) -> Option<Self> {
+        if (index >= 0) & (index < 64) {
+            unsafe {
+                Some(Self::from_index_unchecked(index))
+            }
+        } else {
+            None
+        }
+    }
+
+    #[inline(always)]
+    pub fn get_coordinates(&self) -> (u8, u8) {
+        (self.board_index / 8, self.board_index % 8)
+    }
+
+    #[inline(always)]
+    pub fn get_index(&self) -> u8 {
+        self.board_index
+    }
+
+    unsafe fn add_unchecked(&self, d_row: i8, d_col: i8) -> Self {
+        let (row, col) = self.get_coordinates();
+        Self::from_coordinates_unchecked(row as i8 + d_row, col as i8 + d_col)
+    }
+
+    pub fn add(&self, d_row: i8, d_col: i8) -> Option<Self> {
+        let (row, col) = self.get_coordinates();
+        
+        let new_row = (row as i16) + (d_row as i16);
+        let new_col = (col as i16) + (d_col as i16);
+
+        if new_row >= 0 && new_row < 8 && new_col >= 0 && new_col < 8 {
+            unsafe {
+                Some(Self::from_coordinates_unchecked(new_row as i8, new_col as i8))
+            }
+        } else{
+            None
+        }
+    }
+
+    pub fn from_chess_notation(coordinate: [char; 2]) -> Option<Square> {
         let col = match coordinate[0] {
             'a' | 'A' => 0,
             'b' | 'B' => 1,
@@ -49,15 +204,13 @@ impl Coordinate {
             _ => return None
         };
 
-        Some(Coordinate { row, col })
-    }
-
-    pub fn to_indexer(&self) -> usize {
-        (8 * self.row + self.col) as usize
+        Square::from_coordinates(row, col)
     }
 
     pub fn to_str(&self) -> String {
-        let char_row = match self.row {
+        let (row, col) = self.get_coordinates();
+
+        let char_row = match row {
             0 => '8',
             1 => '7',
             2 => '6',
@@ -66,10 +219,10 @@ impl Coordinate {
             5 => '3',
             6 => '2',
             7 => '1',
-            _ => panic!("Panic => Coordinate {}, {}", self.row, self.col)
+            _ => unreachable!("Panic => Square {}, {}", row, col)
         };
 
-        let char_col = match self.col {
+        let char_col = match col {
             0 => 'a',
             1 => 'b',
             2 => 'c',
@@ -78,65 +231,35 @@ impl Coordinate {
             5 => 'f',
             6 => 'g',
             7 => 'h',
-            _ => panic!("Panic => Coordinate {}, {}", self.row, self.col)
+            _ => unreachable!("Panic => Square {}, {}", row, col)
         };
     
         char_col.to_string() + &char_row.to_string()    
     }
 
-    fn add(&self, delta: &CoordinateDelta) -> Coordinate {
-        Coordinate { row: self.row + delta.delta_row, col: self.col + delta.delta_col }
-    }
-
-    pub fn is_inside_board(&self) -> bool {
-        (self.row >= 0) && (self.row < 8) && (self.col >= 0) && (self.col < 8)
-    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-struct CoordinateDelta {
-    delta_row: i32,
-    delta_col: i32,
-}
-
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum Color {
-    White,
-    Black
+pub enum Move {
+    PromotionMove(MoveCoordinates, Piece),
+    NormalMove(MoveCoordinates)
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum Piece {
-    Pawn,
-    Bishop,
-    Knight,
-    Rook,
-    Queen, 
-    King
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct ColorPiece {
-    pub color : Color,
-    pub piece : Piece
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct MoveCoordinates {
-    current_square: Coordinate,
-    next_square: Coordinate,
+struct MoveCoordinates {
+    current_square: Square,
+    next_square: Square,
 }
 
 impl MoveCoordinates {
     pub fn from_chess_notation(current_square: [char; 2], next_square: [char; 2]) -> Option<MoveCoordinates> {
 
-        let current_square = match Coordinate::from_chess_notation(current_square) {
+        let current_square = match Square::from_chess_notation(current_square) {
             Some(coordinate) => coordinate,
             None => return None
         };
 
-        let next_square = match Coordinate::from_chess_notation(next_square) {
+        let next_square = match Square::from_chess_notation(next_square) {
             Some(coordinate) => coordinate,
             None => return None
         };
@@ -146,25 +269,42 @@ impl MoveCoordinates {
 }
 
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum Move {
-    PromotionMove(MoveCoordinates, Piece),
-    NormalMove(MoveCoordinates)
-}
-
 impl Move {
-    pub fn get_current_square(&self) -> Coordinate {
+    pub fn get_current_square(&self) -> Square {
         match *self {
             Move::PromotionMove(move_coords, _) => move_coords.current_square,
             Move::NormalMove(move_coords) => move_coords.current_square
         }
     }
 
-    pub fn get_next_square(&self) -> Coordinate {
+    pub fn get_next_square(&self) -> Square {
         match *self {
             Move::PromotionMove(move_coords, _) => move_coords.next_square,
             Move::NormalMove(move_coords) => move_coords.next_square
         }
+    }
+
+    // Special cases
+    pub fn get_is_promotion(&self) -> bool {
+        match *self {
+            Move::NormalMove(_) => false,
+            Move::PromotionMove(_, _) => true
+        }
+    }
+    
+    pub fn get_promotion_piece(&self) -> Option<Piece> {
+        match *self {
+            Move::NormalMove(_) => None,
+            Move::PromotionMove(_, piece) => Some(piece)
+        }
+    }
+
+    pub fn get_is_castle(&self) -> bool {
+        false
+    }
+
+    pub fn get_is_enpassant(&self) -> bool {
+        false
     }
 }
 
@@ -195,72 +335,58 @@ pub struct ChessBoard {
 }
 
 impl ChessBoard {
-    pub fn get_cell_content(&self, coordinate: &Coordinate) -> Option<ColorPiece> {
-        *self.board.get(coordinate.to_indexer()).unwrap()
+
+    pub fn get_square_content(&self, square: &Square) -> Option<ColorPiece> {
+        *self.board.get(square.get_index() as usize).unwrap()
     }
 
-    pub fn set_cell_content(&mut self, coordinate: &Coordinate, content: Option<ColorPiece>) {
-        *self.board.get_mut(coordinate.to_indexer()).unwrap() = content;
+    fn set_square_content(&mut self, square: &Square, maybe_color_piece: &Option<ColorPiece>) {
+        *self.board.get_mut(square.get_index() as usize).unwrap() = *maybe_color_piece;
     }
-}
 
-
-impl Color {
-    pub fn to_str(&self) -> String {
-        match *self {
-            Self::White => String::from("W"),
-            Self::Black => String::from("B")
-        }
-    }
-}
-
-impl Piece {
-
-    pub fn to_str(&self) -> String {
-        match *self {
-            Self::Pawn => String::from("P"),
-            Self::Bishop => String::from("B"),
-            Self::Knight => String::from("N"),
-            Self::Rook => String::from("R"),
-            Self::Queen => String::from("Q"),
-            Self::King => String::from("K")
-        }
-    }
-}
-
-impl ColorPiece {
-    pub fn to_str(maybe_color_piece : &Option<ColorPiece>) -> String {
-        match *maybe_color_piece {
-            None => String::from(" "),
-
-            Some(BLACK_KING) => String::from("k"),
-            Some(BLACK_QUEEN) => String::from("q"),
-            Some(BLACK_ROOK) => String::from("r"),
-            Some(BLACK_BISHOP) => String::from("b"),
-            Some(BLACK_KNIGHT) => String::from("n"),
-            Some(BLACK_PAWN) => String::from("p"),
-
-            Some(WHITE_KING) => String::from("K"),
-            Some(WHITE_QUEEN) => String::from("Q"),
-            Some(WHITE_ROOK) => String::from("R"),
-            Some(WHITE_BISHOP) => String::from("B"),
-            Some(WHITE_KNIGHT) => String::from("N"),
-            Some(WHITE_PAWN) => String::from("P"),
-            
-        }
-
-        // match maybe_color_piece {
-        //     None => String::from("  "),
-        //     Some(color_piece) => color_piece.color.to_str() + &color_piece.piece.to_str()
-        // }
-    }
-}
-
-impl ChessBoard {
     pub fn get_turn_color(&self) -> Color {
         self.turn_color
     }
+    
+    pub fn get_game_status(&self) -> ChessStatus {
+        if self.get_allowed_moves(self.turn_color).len() > 0 {
+            ChessStatus::Ongoing
+        } else {
+            if self.is_king_in_check(self.turn_color) {
+                match self.turn_color {
+                    Color::White => ChessStatus::BlackWon,
+                    Color::Black => ChessStatus::WhiteWon
+                }
+            } else {
+                ChessStatus::Draw
+            }
+        }
+    }
 
+    pub fn next_state(&self, mv: &Move) -> Self {
+
+        let mut next_board = self.clone();
+
+        next_board.turn_color = match self.turn_color {
+            Color::Black => Color::White,
+            Color::White => Color::Black
+        };
+
+        let next_piece = match mv {
+            Move::NormalMove(_) => self.get_square_content(&mv.get_current_square()),
+            Move::PromotionMove(_, piece) => Some(ColorPiece { color: self.turn_color, piece: *piece })
+        };
+        
+        next_board.set_square_content(&mv.get_current_square(), &None);
+        next_board.set_square_content(&mv.get_next_square(), &next_piece);
+        
+        next_board
+        
+    }
+}
+
+
+impl ChessBoard {
     pub fn starting_position() -> ChessBoard {
         let board : [Option<ColorPiece>; 64] = [
             Some(BLACK_ROOK), Some(BLACK_KNIGHT), Some(BLACK_BISHOP), Some(BLACK_QUEEN), Some(BLACK_KING), Some(BLACK_BISHOP), Some(BLACK_KNIGHT), Some(BLACK_ROOK),
@@ -299,83 +425,28 @@ impl ChessBoard {
 
         }
     }
-}
 
-// Slow, but safe implementation of Move
-impl ChessBoard {
-    pub fn next_state(&self, move_ : &Move) -> ChessBoard {
-        
-        let mut next_board = self.clone();
+    fn free_squares_in_direction(&self, coordinate: &Square, delta_row: i8, delta_col: i8) -> Vec<Square> {
+        assert!(delta_row != 0 || delta_col != 0);
 
-        next_board.turn_color = match self.turn_color {
-            Color::Black => Color::White,
-            Color::White => Color::Black
-        };
+        let mut output: Vec<Square> = Vec::new();
+        let mut maybe_position = coordinate.add(delta_row, delta_col);
 
-        let next_piece = match move_ {
-            Move::NormalMove(_) => self.get_cell_content(&move_.get_current_square()),
-            Move::PromotionMove(_, piece) => Some(ColorPiece { color: self.turn_color, piece: *piece })
-        };
-        
-        next_board.set_cell_content(&move_.get_current_square(), None);
-        next_board.set_cell_content(&move_.get_next_square(), next_piece);
-
-        next_board
-    }
-
-    pub fn next_state_inplace(&mut self, move_ : &Move) {
-
-        
-        let next_piece = match move_ {
-            Move::NormalMove(_) => self.get_cell_content(&move_.get_current_square()),
-            Move::PromotionMove(_, piece) => Some(ColorPiece { color: self.turn_color, piece: *piece })
-        };
-        
-        self.turn_color = match self.turn_color {
-            Color::Black => Color::White,
-            Color::White => Color::Black
-        };
-
-        self.set_cell_content(&move_.get_current_square(), None);
-        self.set_cell_content(&move_.get_next_square(), next_piece);
-    }
-}
-
-
-pub fn collect_valid_coordinates(coordinates: &Vec<Coordinate>) -> Vec<Coordinate> {
-    coordinates.iter().filter_map(|&coordinate| {
-        if coordinate.is_inside_board() {
-            Some(coordinate)
-        } else {
-            None
-        }
-    })
-    .collect()
-}
-
-impl ChessBoard {
-    fn free_squares_in_direction(&self, coordinate: &Coordinate, direction: &CoordinateDelta) -> Vec<Coordinate> {
-        assert_ne!(*direction, CoordinateDelta{delta_row: 0, delta_col: 0}, "direction is 0 in free_squares_in_direction");
-        
-        let mut output: Vec<Coordinate> = Vec::new();
-        
-        let mut position = coordinate.add(direction);
-        while position.is_inside_board() {
+        while let Some(position) = maybe_position {
             output.push(position);
-    
-            if let Some(_) = self.get_cell_content(&position) {
+            if self.get_square_content(&position) != None { 
                 break;
             }
-    
-            position = position.add(direction);
+
+            maybe_position = position.add(delta_row, delta_col);
         }
-    
+
         output
     } 
 
-    pub fn squares_attacked_by_piece(&self, coordinate: &Coordinate) -> Vec<Coordinate> {
+    pub fn squares_attacked_by_piece(&self, coordinate: &Square) -> Vec<Square> {
 
-        let color_piece = match self.get_cell_content(coordinate) {
+        let color_piece = match self.get_square_content(coordinate) {
             Some(color_piece) => color_piece,
             None => return vec![]
         };
@@ -385,64 +456,64 @@ impl ChessBoard {
 
         match color_piece.piece {
             Piece::Rook => {
-                output.append(&mut self.free_squares_in_direction(coordinate, &CoordinateDelta { delta_row: -1, delta_col: 0 }));
-                output.append(&mut self.free_squares_in_direction(coordinate, &CoordinateDelta { delta_row: 1, delta_col: 0 }));
-                output.append(&mut self.free_squares_in_direction(coordinate, &CoordinateDelta { delta_row: 0, delta_col: -1 }));
-                output.append(&mut self.free_squares_in_direction(coordinate, &CoordinateDelta { delta_row: 0, delta_col: 1 }));
+                output.append(&mut self.free_squares_in_direction(coordinate,  -1,  0 ));
+                output.append(&mut self.free_squares_in_direction(coordinate,  1,  0 ));
+                output.append(&mut self.free_squares_in_direction(coordinate,  0,  -1 ));
+                output.append(&mut self.free_squares_in_direction(coordinate,  0, 1 ));
             },
             Piece::Bishop => {
-                output.append(&mut self.free_squares_in_direction(coordinate, &CoordinateDelta { delta_row: -1, delta_col: -1 }));
-                output.append(&mut self.free_squares_in_direction(coordinate, &CoordinateDelta { delta_row: 1, delta_col: -1 }));
-                output.append(&mut self.free_squares_in_direction(coordinate, &CoordinateDelta { delta_row: -1, delta_col: 1 }));
-                output.append(&mut self.free_squares_in_direction(coordinate, &CoordinateDelta { delta_row: 1, delta_col: 1 }));
+                output.append(&mut self.free_squares_in_direction(coordinate, 1, 1 ));
+                output.append(&mut self.free_squares_in_direction(coordinate, 1, -1 ));
+                output.append(&mut self.free_squares_in_direction(coordinate, -1,  1 ));
+                output.append(&mut self.free_squares_in_direction(coordinate, -1, -1 ));
             },
             Piece::Queen => {
-                output.append(&mut self.free_squares_in_direction(coordinate, &CoordinateDelta { delta_row: -1, delta_col: 0 }));
-                output.append(&mut self.free_squares_in_direction(coordinate, &CoordinateDelta { delta_row: 1, delta_col: 0 }));
-                output.append(&mut self.free_squares_in_direction(coordinate, &CoordinateDelta { delta_row: 0, delta_col: -1 }));
-                output.append(&mut self.free_squares_in_direction(coordinate, &CoordinateDelta { delta_row: 0, delta_col: 1 }));
-                output.append(&mut self.free_squares_in_direction(coordinate, &CoordinateDelta { delta_row: -1, delta_col: -1 }));
-                output.append(&mut self.free_squares_in_direction(coordinate, &CoordinateDelta { delta_row: 1, delta_col: -1 }));
-                output.append(&mut self.free_squares_in_direction(coordinate, &CoordinateDelta { delta_row: -1, delta_col: 1 }));
-                output.append(&mut self.free_squares_in_direction(coordinate, &CoordinateDelta { delta_row: 1, delta_col: 1 }));
+                output.append(&mut self.free_squares_in_direction(coordinate, -1,  0 ));
+                output.append(&mut self.free_squares_in_direction(coordinate, 1, 0 ));
+                output.append(&mut self.free_squares_in_direction(coordinate, 0, -1 ));
+                output.append(&mut self.free_squares_in_direction(coordinate, 0, 1 ));
+                output.append(&mut self.free_squares_in_direction(coordinate, 1,  1 ));
+                output.append(&mut self.free_squares_in_direction(coordinate, 1, -1 ));
+                output.append(&mut self.free_squares_in_direction(coordinate, -1,  1 ));
+                output.append(&mut self.free_squares_in_direction(coordinate, -1, -1 ));
             },
             Piece::Knight => {
-                output = collect_valid_coordinates(&vec![
-                    coordinate.add(&CoordinateDelta {delta_row: -2, delta_col: -1}),
-                    coordinate.add(&CoordinateDelta {delta_row: -2, delta_col: 1}),
-                    coordinate.add(&CoordinateDelta {delta_row: -1, delta_col: -2}),
-                    coordinate.add(&CoordinateDelta {delta_row: -1, delta_col: 2}),
-                    coordinate.add(&CoordinateDelta {delta_row: 2, delta_col: -1}),
-                    coordinate.add(&CoordinateDelta {delta_row: 2, delta_col: 1}),
-                    coordinate.add(&CoordinateDelta {delta_row: 1, delta_col: -2}),
-                    coordinate.add(&CoordinateDelta {delta_row: 1, delta_col: 2}),
-                ]);
+                output = (vec![
+                    coordinate.add( -2, -1),
+                    coordinate.add( -2,  1),
+                    coordinate.add( -1, -2),
+                    coordinate.add( -1, 2),
+                    coordinate.add( 2,  -1),
+                    coordinate.add( 2, 1),
+                    coordinate.add( 1, -2),
+                    coordinate.add( 1, 2),
+                ]).iter().filter_map(|&any| any).collect();
             },
             Piece::King => {
-                output = collect_valid_coordinates(&vec![
-                    coordinate.add(&CoordinateDelta {delta_row: 0, delta_col: -1}),
-                    coordinate.add(&CoordinateDelta {delta_row: 0, delta_col: 1}),
-                    coordinate.add(&CoordinateDelta {delta_row: -1, delta_col: -1}),
-                    coordinate.add(&CoordinateDelta {delta_row: -1, delta_col: 0}),
-                    coordinate.add(&CoordinateDelta {delta_row: -1, delta_col: 1}),
-                    coordinate.add(&CoordinateDelta {delta_row: 1, delta_col: -1}),
-                    coordinate.add(&CoordinateDelta {delta_row: 1, delta_col: 0}),
-                    coordinate.add(&CoordinateDelta {delta_row: 1, delta_col: 1}),
-                ]);
+                output = (vec![
+                    coordinate.add( 0, -1),
+                    coordinate.add( 0,  1),
+                    coordinate.add( -1, -1),
+                    coordinate.add( -1, 0),
+                    coordinate.add( -1,  1),
+                    coordinate.add( 1, -1),
+                    coordinate.add( 1, 0),
+                    coordinate.add( 1, 1),
+                ]).iter().filter_map(|&any| any).collect();
             },
             Piece::Pawn => {
-                match color_piece.color {
+                match color_piece.get_color() {
                     Color::White => {
-                        output = collect_valid_coordinates(&vec![
-                            coordinate.add(&CoordinateDelta { delta_row: -1, delta_col: -1 }),
-                            coordinate.add(&CoordinateDelta { delta_row: -1, delta_col: 1 }),
-                        ]);
+                        output = vec![
+                            coordinate.add(-1, -1),
+                            coordinate.add(-1, 1),
+                        ].iter().filter_map(|&any| any).collect();
                     },
                     Color::Black => {
-                        output = collect_valid_coordinates(&vec![
-                            coordinate.add(&CoordinateDelta { delta_row: 1, delta_col: -1 }),
-                            coordinate.add(&CoordinateDelta { delta_row: 1, delta_col: 1 }),
-                        ]);
+                        output = vec![
+                            coordinate.add(1, -1),
+                            coordinate.add(1, 1),
+                        ].iter().filter_map(|&any| any).collect();
                     }
                 }
             }
@@ -453,25 +524,15 @@ impl ChessBoard {
 
 // Returns true if the square could be captured by a piece of the specified
 // color. This ignores checks.
-fn capture_helper(&self, coordinate: &Coordinate, color: Color) -> bool {
-
-    if coordinate.is_inside_board() {
-        let content = self.get_cell_content(&coordinate);
-        match content {
-            None => return true,
-            Some(other_piece) => {
-                if other_piece.color != color {
-                    return true
-                }
-            }
-        }
-    };
-
-    false
+fn capture_helper(&self, coordinate: &Square, color: Color) -> bool {
+    match self.get_square_content(&coordinate) {
+        None => true,
+        Some(color_piece) => color_piece.get_color() != color
+    }
 }
 
-fn get_potential_moves(&self, coordinate: &Coordinate) -> Vec<Move> {
-    let color_piece = match self.get_cell_content(coordinate) {
+fn get_potential_moves(&self, coordinate: &Square) -> Vec<Move> {
+    let color_piece = match self.get_square_content(coordinate) {
         Some(color_piece) => color_piece,
         None => return vec![]
     };
@@ -480,13 +541,13 @@ fn get_potential_moves(&self, coordinate: &Coordinate) -> Vec<Move> {
     // Castle
     // ...
 
-    let make_move_coordinates = |other_coordinate: Coordinate| -> MoveCoordinates {
+    let make_move_coordinates = |other_coordinate: Square| -> MoveCoordinates {
         MoveCoordinates { current_square: *coordinate, next_square: other_coordinate }
     };
 
     // Other Moves
     if color_piece.piece == Piece::Pawn {
-        let make_promotion_moves = |x : Coordinate| -> Vec<Move> {
+        let make_promotion_moves = |x : Square| -> Vec<Move> {
             vec![
                 Move::PromotionMove(make_move_coordinates(x), Piece::Rook),
                 Move::PromotionMove(make_move_coordinates(x), Piece::Queen),
@@ -496,31 +557,30 @@ fn get_potential_moves(&self, coordinate: &Coordinate) -> Vec<Move> {
         };
 
         let mut pawn_moves = vec![];
+        let (row, _) = coordinate.get_coordinates(); 
 
         if color_piece.color == Color::White {
-            let front_square = coordinate.add(&CoordinateDelta { delta_row: -1, delta_col: 0 });
-            if self.get_cell_content(&front_square) == None {
+            let front_square = coordinate.add(-1, 0).unwrap();
+            if self.get_square_content(&front_square) == None {
                 pawn_moves.push(front_square);
-                if coordinate.row == 6 {
-                    let front_square = front_square.add(&CoordinateDelta { delta_row: -1, delta_col: 0 });
-                    if self.get_cell_content(&front_square) == None {
+                if row == 6 {
+                    let front_square = front_square.add(-1, 0).unwrap();
+                    if self.get_square_content(&front_square) == None {
                         pawn_moves.push(front_square);
                     }
                 }
             }
             
-            let square = coordinate.add(&CoordinateDelta { delta_row: -1, delta_col: -1 });
-            if square.is_inside_board() {
-                if let Some(other_color_piece) = self.get_cell_content(&square){
+            if let Some(square) = coordinate.add(-1, -1) {
+                if let Some(other_color_piece) = self.get_square_content(&square){
                     if other_color_piece.color == Color::Black {
                         pawn_moves.push(square)
                     }
                 }
             }
             
-            let square = coordinate.add(&CoordinateDelta { delta_row: -1, delta_col: 1 });
-            if square.is_inside_board() {
-                if let Some(other_color_piece) = self.get_cell_content(&square){
+            if let Some(square) = coordinate.add(-1, 1) {
+                if let Some(other_color_piece) = self.get_square_content(&square){
                     if other_color_piece.color == Color::Black {
                         pawn_moves.push(square)
                     }
@@ -528,29 +588,27 @@ fn get_potential_moves(&self, coordinate: &Coordinate) -> Vec<Move> {
             }
 
         } else {
-            let front_square = coordinate.add(&CoordinateDelta { delta_row: 1, delta_col: 0 });
-            if self.get_cell_content(&front_square) == None {
+            let front_square = coordinate.add(1, 0).unwrap();
+            if self.get_square_content(&front_square) == None {
                 pawn_moves.push(front_square);
-                if coordinate.row == 1 {
-                    let front_square = front_square.add(&CoordinateDelta { delta_row: 1, delta_col: 0 });
-                    if self.get_cell_content(&front_square) == None {
+                if row == 1 {
+                    let front_square = front_square.add(1, 0).unwrap();
+                    if self.get_square_content(&front_square) == None {
                         pawn_moves.push(front_square);
                     }
                 }
             }
             
-            let square = coordinate.add(&CoordinateDelta { delta_row: 1, delta_col: -1 });
-            if square.is_inside_board() {
-                if let Some(other_color_piece) = self.get_cell_content(&square){
+            if let Some(square) = coordinate.add(1, -1) {
+                if let Some(other_color_piece) = self.get_square_content(&square){
                     if other_color_piece.color == Color::White {
                         pawn_moves.push(square)
                     }
                 }
             }
             
-            let square = coordinate.add(&CoordinateDelta { delta_row: 1, delta_col: 1 });
-            if square.is_inside_board() {
-                if let Some(other_color_piece) = self.get_cell_content(&square){
+            if let Some(square) = coordinate.add(1, 1) {
+                if let Some(other_color_piece) = self.get_square_content(&square){
                     if other_color_piece.color == Color::White {
                         pawn_moves.push(square)
                     }
@@ -558,7 +616,7 @@ fn get_potential_moves(&self, coordinate: &Coordinate) -> Vec<Move> {
             }
         }
 
-        if (color_piece.color == Color::White && coordinate.row == 1) || (color_piece.color == Color::Black && coordinate.row == 6) {
+        if (color_piece.color == Color::White && row == 1) || (color_piece.color == Color::Black && row == 6) {
             output = pawn_moves
                         .iter()
                         .flat_map(|&x| make_promotion_moves(x))
@@ -573,7 +631,7 @@ fn get_potential_moves(&self, coordinate: &Coordinate) -> Vec<Move> {
     } else {
         let moves = self.squares_attacked_by_piece(coordinate);
         output = moves.iter().filter_map(|&coordinate| {
-                        if self.capture_helper(&coordinate, color_piece.color) {
+                        if self.capture_helper(&coordinate, color_piece.get_color()) {
                             Some(Move::NormalMove(make_move_coordinates(coordinate)))
                         } else {
                             None
@@ -587,32 +645,18 @@ fn get_potential_moves(&self, coordinate: &Coordinate) -> Vec<Move> {
 
 }
 
-impl Coordinate {
-    pub fn from_indexer(index: usize) -> Coordinate {
-        let row: i32 = index as i32 / 8;
-        let col: i32 = index as i32 - 8 * row;
-        
-        // Debug Helper 
-        let coordinate = Coordinate { row, col };
-        if !coordinate.is_inside_board() {
-            panic!("Created Coordinate from indexer {}", index);
-        }
-
-        coordinate
-    }
-}
 
 impl ChessBoard {
-    pub fn find_piece(&self, color_piece: ColorPiece) -> Option<Coordinate> {
+    pub fn find_piece(&self, color_piece: ColorPiece) -> Option<Square> {
         for (index, content) in self.board.iter().enumerate() {
             if Some(color_piece) == *content {
-                return Some(Coordinate::from_indexer(index));
+                return Some(Square::from_index(index as i8).unwrap());
             } 
         }
         None
     }
 
-    pub fn find_king(&self, color: Color) -> Coordinate {
+    pub fn find_king(&self, color: Color) -> Square {
         match color {
             Color::White => self.find_piece(WHITE_KING).unwrap(),
             Color::Black => self.find_piece(BLACK_KING).unwrap(),
@@ -621,6 +665,7 @@ impl ChessBoard {
 
     pub fn is_king_in_check(&self, color: Color) -> bool {
         // find king
+
         let king_coordinate = self.find_king(color);
         self.is_square_attacked_by_color(&king_coordinate, match color {
             Color::Black => Color::White,
@@ -628,9 +673,9 @@ impl ChessBoard {
         })
     }
 
-    pub fn is_square_attacked_by_color(&self, coordinate: &Coordinate, color: Color) -> bool {
+    pub fn is_square_attacked_by_color(&self, coordinate: &Square, color: Color) -> bool {
         for index in 0..64 {
-            let this_coordinate = Coordinate::from_indexer(index as usize);
+            let this_coordinate = unsafe { Square::from_index_unchecked(index) };
             if self.contains_piece_of_color(&this_coordinate, color) {
                 if self.squares_attacked_by_piece(&this_coordinate).contains(&coordinate) {
                     return true;
@@ -640,8 +685,8 @@ impl ChessBoard {
         false
     }
 
-    pub fn contains_piece_of_color(&self, coordinate: &Coordinate, color: Color) -> bool {
-        let content = self.get_cell_content(coordinate);
+    pub fn contains_piece_of_color(&self, coordinate: &Square, color: Color) -> bool {
+        let content = self.get_square_content(coordinate);
         match content {
             Some(color_piece) => {
                 color_piece.color == color
@@ -650,73 +695,40 @@ impl ChessBoard {
         }
     }
 
+    pub fn get_allowed_moves(&self, color: Color) -> Vec<Move> {
+        let mut output = vec![];
 
-}
-
-
-
-
-impl ChessBoard {
+        for index in 0..64 {
+            let coordinate = unsafe { Square::from_index_unchecked(index as i8) };
 
 
-pub fn get_allowed_moves(&self, color: Color) -> Vec<Move> {
-    let mut output = vec![];
-    for index in 0..64 {
-        let coordinate = Coordinate::from_indexer(index as usize);
-        match self.get_cell_content(&coordinate) {
-            Some(color_piece) => {
-                if color_piece.color == color {
-                    let maybe_moves = self.get_potential_moves(&coordinate);
-                    output.append(&mut maybe_moves
-                        .iter()
-                        .filter_map(|&x| {
-                            let next_board = self.next_state(&x);
-                            if next_board.is_king_in_check(color_piece.color) {
-                                None
-                            } else {
-                                Some(x)
-                            }
-                        })
-                        .collect()
-                    );
-                }
-            },
-            None => ()
-        } 
-    }
+            match self.get_square_content(&coordinate) {
+                Some(color_piece) => {
+                    if color_piece.get_color() == color {
+                        let maybe_moves = self.get_potential_moves(&coordinate);
 
-    output
-}
-
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum GameStatus {
-    Ongoing,
-    WhiteWon,
-    BlackWon,
-    Draw,
-}
-
-impl ChessBoard {
-    pub fn get_game_status(&self) -> GameStatus {
-        if self.get_allowed_moves(self.turn_color).len() > 0 {
-            GameStatus::Ongoing
-        } else {
-            if self.is_king_in_check(self.turn_color) {
-                match self.turn_color {
-                    Color::White => GameStatus::BlackWon,
-                    Color::Black => GameStatus::WhiteWon
-                }
-            } else {
-                GameStatus::Draw
-            }
+                        output.append(&mut maybe_moves
+                            .iter()
+                            .filter_map(|&x| {
+                                let next_board = self.next_state(&x);
+                                if next_board.is_king_in_check(color_piece.color) {
+                                    None
+                                } else {
+                                    Some(x)
+                                }
+                            })
+                            .collect()
+                        );
+                    }
+                },
+                None => ()
+            } 
         }
-    }
-}
 
-impl ChessBoard {
-    pub fn iter_coordinates<'a>(&'a self) -> impl Iterator<Item = (Coordinate, Option<ColorPiece>)> + 'a {
-        (0..64).map(move |index| (Coordinate::from_indexer(index), *self.board.get(index).unwrap()))
+        output
+    }
+
+    pub fn iter_coordinates<'a>(&'a self) -> impl Iterator<Item = (Square, Option<ColorPiece>)> + 'a {
+        (0..64).map(move |index| (Square::from_index(index as i8).unwrap(), *self.board.get(index).unwrap()))
     }
 }

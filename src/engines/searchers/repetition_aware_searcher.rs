@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 
 use crate::chess_server::types::Color;
-use crate::chess_server::types::GameStatus;
+use crate::chess_server::types::ChessStatus;
 use crate::chess_server::types::Piece;
 use crate::engines::engine_traits::*;
 
@@ -87,7 +87,7 @@ impl<E: Evaluator> RepetitionAwareSearcher<E> {
         }
 
         match chess_board.get_game_status() {
-            GameStatus::Ongoing => {
+            ChessStatus::Ongoing => {
                 let color = chess_board.get_turn_color();
                 let mut allowed_moves = chess_board.get_allowed_moves(color);
 
@@ -113,7 +113,7 @@ impl<E: Evaluator> RepetitionAwareSearcher<E> {
                     if color == Color::White {
                         allowed_moves.sort_by_key(|&move_| {
                             if chess_board.contains_piece_of_color(&move_.get_next_square(), Color::Black) {
-                                -get_piece_value(chess_board.get_cell_content(&move_.get_next_square()).unwrap().piece)
+                                -get_piece_value(chess_board.get_square_content(&move_.get_next_square()).unwrap().get_piece())
                             } else {
                                 0
                             }
@@ -121,7 +121,7 @@ impl<E: Evaluator> RepetitionAwareSearcher<E> {
                     } else {
                         allowed_moves.sort_by_key(|&move_| {
                             if chess_board.contains_piece_of_color(&move_.get_next_square(), Color::White) {
-                                -get_piece_value(chess_board.get_cell_content(&move_.get_next_square()).unwrap().piece)
+                                -get_piece_value(chess_board.get_square_content(&move_.get_next_square()).unwrap().get_piece())
                             } else {
                                 0
                             }
@@ -222,9 +222,9 @@ impl<E: Evaluator> RepetitionAwareSearcher<E> {
                     return (eval, best_move);
                 }
             },
-            GameStatus::BlackWon => (EVAL_BLACK_WON, None),
-            GameStatus::WhiteWon => (EVAL_WHITE_WON, None),
-            GameStatus::Draw => (EVAL_DRAW, None)
+            ChessStatus::BlackWon => (EVAL_BLACK_WON, None),
+            ChessStatus::WhiteWon => (EVAL_WHITE_WON, None),
+            ChessStatus::Draw => (EVAL_DRAW, None)
         }
     }
 }

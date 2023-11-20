@@ -1,5 +1,5 @@
 use crate::chess_server::types::Color;
-use crate::chess_server::types::GameStatus;
+use crate::chess_server::types::ChessStatus;
 use crate::engines::engine_traits::*;
 use std::cmp::max;
 use std::cmp::min;
@@ -39,7 +39,7 @@ impl<E: Evaluator> AlphaBetaSearcher<E> {
             (evaluator.evaluate(chess_board), None)
         } else {
             match chess_board.get_game_status() {
-                GameStatus::Ongoing => {
+                ChessStatus::Ongoing => {
                     let color = chess_board.get_turn_color();
                     let allowed_moves = chess_board.get_allowed_moves(color);
 
@@ -94,9 +94,9 @@ impl<E: Evaluator> AlphaBetaSearcher<E> {
                         return (value, best_move);
                     }
                 },
-                GameStatus::BlackWon => (EVAL_BLACK_WON, None),
-                GameStatus::WhiteWon => (EVAL_WHITE_WON, None),
-                GameStatus::Draw => (EVAL_DRAW, None)
+                ChessStatus::BlackWon => (EVAL_BLACK_WON, None),
+                ChessStatus::WhiteWon => (EVAL_WHITE_WON, None),
+                ChessStatus::Draw => (EVAL_DRAW, None)
             }
         }
     }

@@ -1,5 +1,5 @@
 
-use crate::chess_server::types::{ChessBoard, Move, Color, GameStatus};
+use crate::chess_server::types::{ChessBoard, Move, Color, ChessStatus};
 
 pub trait Player {
     fn select_move(&self, chess_board: &ChessBoard) -> Move;
@@ -10,7 +10,7 @@ pub struct GameManager<'a, 'b> {
     chess_board: ChessBoard,
     player_white: &'a dyn Player,
     player_black: &'b dyn Player,
-    game_status: GameStatus,
+    game_status: ChessStatus,
     round_number: u32,
 }
 
@@ -20,7 +20,7 @@ impl<'a, 'b> GameManager<'a, 'b> {
             chess_board: ChessBoard::starting_position(), 
             player_white, 
             player_black,
-            game_status: GameStatus::Ongoing,
+            game_status: ChessStatus::Ongoing,
             round_number: 0,
         }
     }
@@ -35,7 +35,7 @@ impl<'a, 'b> GameManager<'a, 'b> {
     }
 
     pub fn is_game_ongoing(&self) -> bool {
-        self.game_status == GameStatus::Ongoing
+        self.game_status == ChessStatus::Ongoing
     }
 
 
@@ -48,11 +48,11 @@ impl<'a, 'b> GameManager<'a, 'b> {
         self.round_number += 1;
         println!("Selected Move: {}", selected_move);
 
-        self.chess_board.next_state_inplace(&selected_move);    
+        self.chess_board = self.chess_board.next_state(&selected_move);    
 
         // Check the game status
         self.game_status = self.chess_board.get_game_status();
-        if self.game_status != GameStatus::Ongoing {
+        if self.game_status != ChessStatus::Ongoing {
             println!("Game Over! Status: {:?}", self.game_status);
         }
     }

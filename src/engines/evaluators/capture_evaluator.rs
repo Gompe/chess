@@ -1,7 +1,7 @@
 use std::cmp::{max, min};
 use std::iter::Zip;
 
-use crate::chess_server::types::{Color, Coordinate, Piece};
+use crate::chess_server::types::{Color, Piece};
 use crate::engines::engine_traits::*;
 
 use crate::chess_server::types::ChessBoard;
@@ -41,7 +41,7 @@ impl<E: Evaluator> Evaluator for CaptureEvaluator<E> {
         for (coordinate, content) in chess_board.iter_coordinates() {
             
             if let Some(content) = content {
-                let piece_value = match content.piece {
+                let piece_value = match content.get_piece() {
                     Piece::Pawn => VALUE_PAWN,
                     Piece::Bishop => VALUE_BISHOP,
                     Piece::Knight => VALUE_KNIGHT,
@@ -50,16 +50,16 @@ impl<E: Evaluator> Evaluator for CaptureEvaluator<E> {
                     _ => 0.,
                 };
 
-                match content.color {
-                    Color::White => content_value[coordinate.to_indexer()] = piece_value,
-                    Color::Black => content_value[coordinate.to_indexer()] = -piece_value,
+                match content.get_color() {
+                    Color::White => content_value[coordinate.get_index() as usize] = piece_value,
+                    Color::Black => content_value[coordinate.get_index() as usize] = -piece_value,
                 };
                 
                 for coord in chess_board.squares_attacked_by_piece(&coordinate) {
                     // Does not verify pins for example
-                    match content.color {
-                        Color::White => pressure[coord.to_indexer()] += 1,
-                        Color::Black => pressure[coord.to_indexer()] -= 1,
+                    match content.get_color() {
+                        Color::White => pressure[coord.get_index() as usize] += 1,
+                        Color::Black => pressure[coord.get_index() as usize] -= 1,
                     };
                 }
             }

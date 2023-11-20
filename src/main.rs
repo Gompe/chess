@@ -1,8 +1,5 @@
 mod chess_server;
 mod engines;
-mod bitboard;
-
-mod modular_server;
 
 use std::time::Instant;
 
@@ -82,9 +79,8 @@ fn main() {
         RepetitionAwareSearcher::new(5)
     );
 
-    // let player_black = RandomEngine::new();
 
-    // let player_black = RandomEngine::new();
+
 
     let mut game_manager = GameManager::new(
         &player_white, &player_black
@@ -94,7 +90,7 @@ fn main() {
     let mut total_duration_white: u128 = 0;
     let mut total_duration_black: u128= 0;
 
-    let max_iter = 100;
+    let max_iter = 200;
     let mut num_iter = 1;
 
 
