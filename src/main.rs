@@ -45,14 +45,24 @@ fn main() {
     //         [1.0, 0.1]
     // ));
 
-    let eval_black = CaptureEvaluator::new(MaterialEvaluator::new());
+    // let eval_black = CaptureEvaluator::new(MaterialEvaluator::new());
 
     let eval_white = CacheEvaluator::new(
         CaptureEvaluator::new(
             LinearEvaluator::new(
                 MaterialEvaluator::new(),
                 PositionalEvaluator::new(),
-                [1.0, 0.01],
+                [1.0, 0.05],
+            )
+        )
+    );
+
+    let eval_black = CacheEvaluator::new(
+        CaptureEvaluator::new(
+            LinearEvaluator::new(
+                MaterialEvaluator::new(),
+                KingSafetyEvaluator::new(),
+                [1.0, 0.25],
             )
         )
     );
@@ -67,8 +77,10 @@ fn main() {
 
     let player_black = SearcherEngine::new(
         eval_black, 
-        MinMaxSearcher::new(1)
+        RepetitionAwareSearcher::new(5)
     );
+
+    // let player_black = RandomEngine::new();
 
     // let player_black = RandomEngine::new();
 
