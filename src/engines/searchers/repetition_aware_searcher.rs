@@ -86,10 +86,12 @@ impl<E: Evaluator> RepetitionAwareSearcher<E> {
             }
         }
 
-        match chess_board.get_game_status() {
+        let color = chess_board.get_turn_color();
+        let mut allowed_moves = chess_board.get_allowed_moves(color);
+        match chess_board.get_game_status_from_precomputed(&allowed_moves) {
             ChessStatus::Ongoing => {
-                let color = chess_board.get_turn_color();
-                let mut allowed_moves = chess_board.get_allowed_moves(color);
+                // let color = chess_board.get_turn_color();
+                // let mut allowed_moves = chess_board.get_allowed_moves(color);
 
                 
                 if depth == 0 {
