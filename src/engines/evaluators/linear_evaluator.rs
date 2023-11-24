@@ -1,6 +1,6 @@
 use crate::engines::engine_traits::*;
 
-use crate::chess_server::types::ChessBoard;
+use crate::chess_server::chess_types::ChessBoard;
 use ordered_float::OrderedFloat;
 
 pub struct LinearEvaluator<E1: Evaluator, E2: Evaluator> {

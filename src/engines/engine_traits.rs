@@ -1,6 +1,6 @@
 
 use crate::chess_server::game::Player;
-use crate::chess_server::types::{ChessBoard, Move};
+use crate::chess_server::chess_types::{ChessBoard, Move};
 
 use ordered_float::OrderedFloat;
 

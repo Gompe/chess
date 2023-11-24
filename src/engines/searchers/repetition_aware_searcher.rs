@@ -1,16 +1,16 @@
 use std::cell::RefCell;
 
-use crate::chess_server::types::Color;
-use crate::chess_server::types::ChessStatus;
-use crate::chess_server::types::Piece;
+use crate::chess_server::chess_types::Color;
+use crate::chess_server::chess_types::ChessStatus;
+use crate::chess_server::chess_types::Piece;
 use crate::engines::engine_traits::*;
 
 use std::cmp::max;
 use std::cmp::min;
 use std::marker::PhantomData;
 
-use crate::chess_server::types::ChessBoard;
-use crate::chess_server::types::Move;
+use crate::chess_server::chess_types::ChessBoard;
+use crate::chess_server::chess_types::Move;
 
 use ordered_float::OrderedFloat;
 

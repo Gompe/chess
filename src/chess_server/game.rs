@@ -1,5 +1,5 @@
 
-use crate::chess_server::types::{ChessBoard, Move, Color, ChessStatus};
+use crate::chess_server::chess_types::{ChessBoard, Move, Color, ChessStatus};
 
 pub trait Player {
     fn select_move(&self, chess_board: &ChessBoard) -> Move;

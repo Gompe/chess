@@ -3,28 +3,28 @@ mod engines;
 
 use std::time::Instant;
 
+use crate::engines::engine_traits::Evaluator;
 use engines::evaluators::LinearEvaluator;
 use engines::evaluators::PositionalEvaluator;
 use engines::evaluators::MaterialEvaluator;
 use engines::evaluators::CacheEvaluator;
 use engines::evaluators::CaptureEvaluator;
+use engines::evaluators::DynamicEvaluator;
+use engines::evaluators::KingSafetyEvaluator;
+use engines::evaluators::StructureEvaluator;
 
+
+use engines::engine_traits::SearcherEngine;
 use engines::searchers::MinMaxSearcher;
 use engines::searchers::AlphaBetaSearcher;
 use engines::searchers::IterativeDeepening;
 use engines::searchers::RepetitionAwareSearcher;
 
 use engines::random_engine::RandomEngine;
-use engines::engine_traits::SearcherEngine;
 
 
 use chess_server::game::GameManager;
-
-use crate::chess_server::types::Color;
-use crate::engines::engine_traits::Evaluator;
-use crate::engines::evaluators::DynamicEvaluator;
-use crate::engines::evaluators::KingSafetyEvaluator;
-use crate::engines::evaluators::StructureEvaluator;
+use crate::chess_server::chess_types::Color;
 
 
 

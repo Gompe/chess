@@ -1,7 +1,6 @@
-use crate::chess_server::types::Color;
+use crate::chess_server::chess_types::{Color, ChessBoard};
 use crate::engines::engine_traits::*;
 
-use crate::chess_server::types::ChessBoard;
 use ordered_float::OrderedFloat;
 
 pub struct StructureEvaluator;

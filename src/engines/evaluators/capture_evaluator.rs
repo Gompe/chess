@@ -1,10 +1,8 @@
 use std::cmp::{max, min};
-use std::iter::Zip;
 
-use crate::chess_server::types::{Color, Piece};
+use crate::chess_server::chess_types::{Color, Piece, ChessBoard};
 use crate::engines::engine_traits::*;
 
-use crate::chess_server::types::ChessBoard;
 use ordered_float::OrderedFloat;
 
 const VALUE_PAWN : f64 = 1.;

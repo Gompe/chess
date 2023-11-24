@@ -3,8 +3,8 @@ use std::collections::hash_map::DefaultHasher;
 
 use std::hash::{Hash, Hasher};
 
-use crate::chess_server::types::{ChessBoard, ColorPiece, Color};
-use crate::chess_server::types::{
+use crate::chess_server::chess_types::{ChessBoard, ColorPiece, Color};
+use crate::chess_server::chess_types::{
     WHITE_KING,
     WHITE_QUEEN,
     WHITE_ROOK,
@@ -63,6 +63,7 @@ impl BoardHash {
                 BLACK_BISHOP => 9,
                 BLACK_KNIGHT => 10,
                 BLACK_PAWN => 11,
+                _ => unreachable!()
             };
 
             return 1 + (index as usize) * 12 + content_indexer 

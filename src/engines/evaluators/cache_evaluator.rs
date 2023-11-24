@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use crate::engines::engine_traits::*;
 
-use crate::chess_server::types::ChessBoard;
+use crate::chess_server::chess_types::ChessBoard;
 use crate::engines::zobrist_hash::ZobristHashMap;
 
 use ordered_float::OrderedFloat;
