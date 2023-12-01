@@ -45,8 +45,20 @@ impl Evaluator for PositionalEvaluator {
                     Piece::King => VALUE_KING,
                 };
 
+
                 let number_attacked_squares = chess_board.squares_attacked_by_piece(&coordinate).len();
                 eval += (number_attacked_squares as f64) * sign * piece_value;
+
+                if content.get_piece() == Piece::Pawn {
+                    match content.get_color() {
+                        Color::White => {
+                            eval += 3.0 * (6 - coordinate.get_coordinates().0) as f64;
+                        },
+                        Color::Black => {
+                            eval += -3.0 * (coordinate.get_coordinates().0 - 1) as f64;
+                        }
+                    }
+                }
             }
         }
 

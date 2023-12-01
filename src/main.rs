@@ -4,6 +4,8 @@ mod engines;
 use std::time::Instant;
 
 use crate::engines::engine_traits::Evaluator;
+use crate::engines::evaluators::PressureEvaluator;
+use crate::engines::evaluators::ThresholdEvaluator;
 use engines::evaluators::LinearEvaluator;
 use engines::evaluators::PositionalEvaluator;
 use engines::evaluators::MaterialEvaluator;
@@ -19,11 +21,13 @@ use engines::searchers::MinMaxSearcher;
 use engines::searchers::AlphaBetaSearcher;
 use engines::searchers::IterativeDeepening;
 use engines::searchers::RepetitionAwareSearcher;
+use engines::searchers::DeepSearch;
 
 use engines::random_engine::RandomEngine;
 
 
 use chess_server::game::GameManager;
+use ordered_float::OrderedFloat;
 use crate::chess_server::chess_types::Color;
 
 
@@ -47,43 +51,49 @@ fn main() {
     // let eval_black = CaptureEvaluator::new(MaterialEvaluator::new());
 
     let eval_white = CacheEvaluator::new(
-        CaptureEvaluator::new(
-            LinearEvaluator::new(
-                MaterialEvaluator::new(),
-                PositionalEvaluator::new(),
-                [1.0, 0.05],
-            )
-        )
+        // ThresholdEvaluator::new(
+            CaptureEvaluator::new(
+                LinearEvaluator::new(
+                    MaterialEvaluator::new(),
+                    PressureEvaluator::new(),
+                    [1.0, 0.05],
+                )
+            ),
+        // OrderedFloat(5.00)
+        // )
     );
 
     let eval_black = CacheEvaluator::new(
-        CaptureEvaluator::new(
-            LinearEvaluator::new(
-                MaterialEvaluator::new(),
-                KingSafetyEvaluator::new(),
-                [1.0, 0.25],
-            )
-        )
+        // ThresholdEvaluator::new(
+            CaptureEvaluator::new(
+                LinearEvaluator::new(
+                    MaterialEvaluator::new(),
+                    KingSafetyEvaluator::new(),
+                    [1.0, 0.25],
+                )
+            ),
+        //     OrderedFloat(5.00)
+        // )
     );
 
     // let eval_white = MaterialEvaluator::new();
 
     let player_white = SearcherEngine::new(
         eval_white, 
-        RepetitionAwareSearcher::new(5)
+        DeepSearch::new(6)
     );
 
 
     let player_black = SearcherEngine::new(
         eval_black, 
-        RepetitionAwareSearcher::new(5)
+        DeepSearch::new(4)
     );
 
-
+    // let player_black = RandomEngine::new();
 
 
     let mut game_manager = GameManager::new(
-        &player_white, &player_black
+        &player_black, &player_white
     );
 
 

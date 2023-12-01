@@ -18,20 +18,19 @@ use crate::engines::zobrist_hash::ZobristHashMap;
 
 const INF: OrderedFloat<f64> = OrderedFloat(1000.);
 
-pub struct RepetitionAwareSearcher<E: Evaluator> {
+pub struct DeepSearch<E: Evaluator> {
     max_depth: usize,
     cache: RefCell< ZobristHashMap<(OrderedFloat<f64>, Move, u8)> >,
-    seen_positions: RefCell< Vec<ChessBoard> >,
     phantom: PhantomData<E>,
 }
 
-impl<E: Evaluator> RepetitionAwareSearcher<E> {
-    pub fn new(max_depth: usize) -> RepetitionAwareSearcher<E> {
+impl<E: Evaluator> DeepSearch<E> {
+    pub fn new(max_depth: usize) -> DeepSearch<E> {
         if max_depth == 0 {
             panic!("Max depth must be at least 1.")
         }
 
-        RepetitionAwareSearcher { max_depth, phantom: PhantomData, cache: RefCell::new(ZobristHashMap::new()), seen_positions: RefCell::new(Vec::with_capacity(100)) }
+        DeepSearch { max_depth, phantom: PhantomData, cache: RefCell::new(ZobristHashMap::new()) }
     }
 
     fn get_cached(&self, chess_board: &ChessBoard) -> Option<(OrderedFloat<f64>, Move, u8)> {
@@ -55,44 +54,48 @@ impl<E: Evaluator> RepetitionAwareSearcher<E> {
         max_depth: usize,
     ) -> (OrderedFloat<f64>, Option<Move>) {
 
-        let is_position_repeated = self.seen_positions.borrow().contains(chess_board);
 
-        let return_value = |eval| {
-            if is_position_repeated {
-                match chess_board.get_turn_color() {
-                    Color::White => min(OrderedFloat(0.), eval),
-                    Color::Black => max(OrderedFloat(0.), eval)
-                }
-            } else {
-                eval
-            }
-        };
 
         if depth == max_depth {
             let eval = evaluator.evaluate(chess_board);
-            return (return_value(eval), None);
+            return (eval, None);
         } 
 
+        
         let mut best_move = None;
 
         // You only check for cached values if the position is not repeated
-        if !is_position_repeated {
-            if let Some((eval, move_, depth_from_point)) = self.get_cached(chess_board) {
-                if depth_from_point >= (max_depth - depth) as u8 {
-                    return (eval, Some(move_))
+        if let Some((eval, move_, depth_from_point)) = self.get_cached(chess_board) {
+            if depth_from_point >= (max_depth - depth) as u8 {
+                match chess_board.get_turn_color() {
+                    Color::White => {
+                        // Position for white has eval >= beta
+                        // black won't play a move that will lead to this position
+                        if eval >= beta {
+                            return (eval, Some(move_))
+                        } 
+                    },
+                    Color::Black => {
+                        // Position for black has eval <= alpha
+                        // white won't play a move that will lead to this position
+                        if eval <= alpha {
+                            return (eval, Some(move_))
+                        } 
+                    },
                 }
-
-                best_move = Some(move_);
             }
+
+            best_move = Some(move_);
         }
+        
 
         let color = chess_board.get_turn_color();
         let mut allowed_moves = chess_board.get_allowed_moves(color);
+
         match chess_board.get_game_status_from_precomputed(&allowed_moves) {
             ChessStatus::Ongoing => {
                 // let color = chess_board.get_turn_color();
                 // let mut allowed_moves = chess_board.get_allowed_moves(color);
-
                 
                 if depth == 0 {
                     if color == Color::White {
@@ -130,30 +133,18 @@ impl<E: Evaluator> RepetitionAwareSearcher<E> {
                         });
                     }
                 }
-                
-                self.seen_positions.borrow_mut().push(*chess_board);
-                
-                let mut early_stopping = false;
 
+                if let Some(mv) = best_move {
+                    assert!(allowed_moves.contains(&mv));
+                    let index = allowed_moves.iter().position(|&mv_| mv_ == mv).unwrap();
+                    allowed_moves.swap(0, index);
+                } 
+
+                                
                 if color == Color::White {
                     // Maximizing Player
                     let mut value = -INF;
                     let mut alpha =  alpha; // -INF makes it better ?
-                    
-                    // Killer Heuristic
-                    if let Some(move_) = best_move {
-                        let search_result = self.search_impl(
-                            &chess_board.next_state(&move_), &evaluator, depth + 1, alpha, beta, max_depth
-                        );
-                        
-                        if search_result.0 > value {
-                            value = search_result.0;
-                            best_move = Some(move_);
-                        }
-
-                        alpha = max(alpha, value);
-                    };
-
                     
                     for move_ in allowed_moves {
                         let search_result = self.search_impl(
@@ -166,40 +157,20 @@ impl<E: Evaluator> RepetitionAwareSearcher<E> {
                         }
 
                         if value >= beta {
-                            early_stopping = true;
                             break;
                         }
 
                         alpha = max(alpha, value);
                     }
 
-                    if !early_stopping && !is_position_repeated {
-                        self.insert_cache(chess_board, max_depth - depth, value, best_move.unwrap());
-                    }
-                    let eval = return_value(value);
-
-                    assert_eq!(Some(*chess_board), self.seen_positions.borrow_mut().pop());
-                    return (eval, best_move);
+                    self.insert_cache(chess_board, max_depth - depth, value, best_move.unwrap());
+                    return (value, best_move);
 
                 } else {
                     // Minimizing Player
                     let mut value = INF;
                     let mut beta = beta; // INF makes it better ?
                     
-                    // Killer Heuristic
-                    if let Some(move_) = best_move {
-                        let search_result = self.search_impl(
-                            &chess_board.next_state(&move_), &evaluator, depth + 1, alpha, beta, max_depth
-                        );
-                        
-                        if search_result.0 < value {
-                            value = search_result.0;
-                            best_move = Some(move_);
-                        }
-
-                        beta = min(beta, value);
-                    };
-
                     for move_ in allowed_moves {
                         let search_result = self.search_impl(
                             &chess_board.next_state(&move_), &evaluator, depth + 1, alpha, beta, max_depth
@@ -211,21 +182,14 @@ impl<E: Evaluator> RepetitionAwareSearcher<E> {
                         }
 
                         if value <= alpha {
-                            early_stopping = true;
                             break;
                         }
 
                         beta = min(beta, value);
                     }
                     
-                    if !early_stopping && !is_position_repeated {
-                        self.insert_cache(chess_board, max_depth - depth, value, best_move.unwrap());
-                    }
-
-                    let eval = return_value(value);
-
-                    assert_eq!(Some(*chess_board), self.seen_positions.borrow_mut().pop());
-                    return (eval, best_move);
+                    self.insert_cache(chess_board, max_depth - depth, value, best_move.unwrap());
+                    return (value, best_move);
                 }
             },
             ChessStatus::BlackWon => (EVAL_BLACK_WON, None),
@@ -235,7 +199,7 @@ impl<E: Evaluator> RepetitionAwareSearcher<E> {
     }
 }
 
-impl<E: Evaluator> Searcher<E> for RepetitionAwareSearcher<E> {
+impl<E: Evaluator> Searcher<E> for DeepSearch<E> {
     fn search(&self, chess_board: &ChessBoard, evaluator: &E) -> Move {
 
         for max_depth in 1..self.max_depth {
@@ -245,7 +209,6 @@ impl<E: Evaluator> Searcher<E> for RepetitionAwareSearcher<E> {
         let (eval, mv) = self.search_impl(chess_board, evaluator, 0, -INF, INF, self.max_depth);
         println!("Evaluation: {} with move {}", eval, mv.unwrap());
 
-        self.seen_positions.borrow_mut().push(*chess_board);
 
         mv.unwrap()
     }
