@@ -4,24 +4,37 @@ mod engines;
 use std::time::Instant;
 
 use crate::engines::engine_traits::Evaluator;
-use crate::engines::evaluators::PressureEvaluator;
-use crate::engines::evaluators::ThresholdEvaluator;
-use engines::evaluators::LinearEvaluator;
-use engines::evaluators::PositionalEvaluator;
-use engines::evaluators::MaterialEvaluator;
-use engines::evaluators::CacheEvaluator;
-use engines::evaluators::CaptureEvaluator;
-use engines::evaluators::DynamicEvaluator;
-use engines::evaluators::KingSafetyEvaluator;
-use engines::evaluators::StructureEvaluator;
-
-
+use crate::engines::evaluators::{ClampEvaluator, RolloutEvaluator, StochasticRollout};
 use engines::engine_traits::SearcherEngine;
-use engines::searchers::MinMaxSearcher;
-use engines::searchers::AlphaBetaSearcher;
-use engines::searchers::IterativeDeepening;
-use engines::searchers::RepetitionAwareSearcher;
-use engines::searchers::DeepSearch;
+
+
+use engines::evaluators::{
+    LinearEvaluator,
+    PositionalEvaluator,
+    PressureEvaluator,
+    MaterialEvaluator,
+    CacheEvaluator,
+    CaptureEvaluator,
+    DynamicEvaluator,
+    KingSafetyEvaluator,
+    ThresholdEvaluator,
+    StructureEvaluator,
+};
+
+
+use engines::searchers::{
+    MonteCarloTreeSearch,
+    MinMaxSearcher,
+    AlphaBetaSearcher,
+    IterativeDeepening,
+    RepetitionAwareSearcher,
+    DeepSearch,
+};
+
+
+use engines::policies::{
+    SoftmaxPolicy
+};
 
 use engines::random_engine::RandomEngine;
 
@@ -34,23 +47,54 @@ use crate::chess_server::chess_types::Color;
 
 fn main() {
 
+    let eval_policy_white = CacheEvaluator::new(
+        ClampEvaluator::new(
+            CaptureEvaluator::new(
+                LinearEvaluator::new(
+                    MaterialEvaluator::new(),
+                    PressureEvaluator::new(),
+                    [1.0, 0.05],
+                ),
+            ),
+            OrderedFloat(6.)
+        )
+    );
+
+    let eval_white = ClampEvaluator::new(
+        CaptureEvaluator::new(
+            LinearEvaluator::new(
+                MaterialEvaluator::new(),
+                PressureEvaluator::new(),
+                [1.0, 0.05],
+            ),
+        ),
+        OrderedFloat(3.00)
+    );
+
     // let eval_white = CacheEvaluator::new(
-    //     LinearEvaluator::new(
-    //         MaterialEvaluator::new(),
-    //         PositionalEvaluator::new(),
-    //         [1., 0.1]
+    //     ClampEvaluator::new(
+    //         CaptureEvaluator::new(
+    //             LinearEvaluator::new(
+    //                 MaterialEvaluator::new(),
+    //                 PressureEvaluator::new(),
+    //                 [1.0, 0.05],
+    //             ),
+    //         ),
+    //         OrderedFloat(3.00)
     //     )
     // );
 
-    // let eval_white = CacheEvaluator::new(LinearEvaluator::new(
-    //         MaterialEvaluator::new(),
-    //         PositionalEvaluator::new(),
-    //         [1.0, 0.1]
-    // ));
 
-    // let eval_black = CaptureEvaluator::new(MaterialEvaluator::new());
+    let eval_white = StochasticRollout::new(
+        SoftmaxPolicy::new(eval_white.clone(), 0.1),
+        eval_white.clone(),
+        20,
+        5
+    );
 
-    let eval_white = CacheEvaluator::new(
+    let cloned_eval = eval_white.clone();
+
+    let eval_black = CacheEvaluator::new(
         // ThresholdEvaluator::new(
             CaptureEvaluator::new(
                 LinearEvaluator::new(
@@ -63,42 +107,34 @@ fn main() {
         // )
     );
 
-    let eval_black = CacheEvaluator::new(
-        // ThresholdEvaluator::new(
-            CaptureEvaluator::new(
-                LinearEvaluator::new(
-                    MaterialEvaluator::new(),
-                    KingSafetyEvaluator::new(),
-                    [1.0, 0.25],
-                )
-            ),
-        //     OrderedFloat(5.00)
-        // )
-    );
-
-    // let eval_white = MaterialEvaluator::new();
 
     let player_white = SearcherEngine::new(
         eval_white, 
-        DeepSearch::new(6)
+        MonteCarloTreeSearch::new(
+            SoftmaxPolicy::new(eval_policy_white, 2.),
+            40,
+            300, 
+            10.
+        )
     );
 
 
     let player_black = SearcherEngine::new(
         eval_black, 
-        DeepSearch::new(4)
+        DeepSearch::new(5)
     );
 
     // let player_black = RandomEngine::new();
 
 
     let mut game_manager = GameManager::new(
-        &player_black, &player_white
+        &player_white, 
+        &player_black,
     );
 
 
     let mut total_duration_white: u128 = 0;
-    let mut total_duration_black: u128= 0;
+    let mut total_duration_black: u128 = 0;
 
     let max_iter = 200;
     let mut num_iter = 1;
@@ -109,6 +145,8 @@ fn main() {
         Box::new(KingSafetyEvaluator::new()),
         Box::new(MaterialEvaluator::new()),
         Box::new(PositionalEvaluator::new()),
+        Box::new(PressureEvaluator::new()),
+        Box::new(cloned_eval)
     ];
 
     while game_manager.is_game_ongoing() && num_iter < max_iter {

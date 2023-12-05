@@ -1,4 +1,3 @@
-use std::vec;
 use smallvec::{SmallVec, smallvec};
 
 use super::color::Color;
@@ -15,7 +14,9 @@ use super::chess_move::Move;
 
 pub type ChessBoard=SmallVecChessBoard;
 
-pub type MoveContainer = SmallVec::<[Move; 64]>;
+pub const MOVE_CONTAINER_SIZE: usize = 64;
+
+pub type MoveContainer = SmallVec::<[Move; MOVE_CONTAINER_SIZE]>;
 pub type SquareContainer = SmallVec<[Square; 16]>;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -128,7 +129,6 @@ impl SmallVecChessBoard {
 
         }
     }
-
 
     fn inplace_free_squares_in_direction(&self, coordinate: &Square, delta_row: i8, delta_col: i8, output: &mut SquareContainer) {
         

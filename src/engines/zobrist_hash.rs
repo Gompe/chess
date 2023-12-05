@@ -40,7 +40,7 @@ fn init_zobrist(local_state: u64) -> [u64; TABLE_SIZE] {
 }
 
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 struct BoardHash {
     value: u64,
 }
@@ -83,6 +83,7 @@ impl BoardHash {
     }
 }
 
+#[derive(Clone)]
 pub struct ZobristHashMap<V> {
     zobrist_table: [u64; TABLE_SIZE],
     cache: HashMap<BoardHash, V>
@@ -104,9 +105,21 @@ impl<V> ZobristHashMap<V> {
         }
     }
 
+    pub fn get_mut(&mut self, key: &ChessBoard) -> Option<&mut V>{
+        let hash_board = BoardHash::new(key, self.zobrist_table);
+        self.cache.get_mut(&hash_board) 
+    }
+
     pub fn insert(&mut self, key: &ChessBoard, value: V) {
         let hash_board = BoardHash::new(key, self.zobrist_table);
         self.cache.insert(hash_board, value);
     }
 
+    pub fn len(&self) -> usize {
+        self.cache.len()
+    }
+
+    pub fn clear(&mut self) {
+        self.cache.clear()
+    }
 }

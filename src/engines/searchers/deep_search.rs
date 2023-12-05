@@ -1,3 +1,4 @@
+use std::borrow::BorrowMut;
 use std::cell::RefCell;
 
 use crate::chess_server::chess_types::Color;
@@ -201,6 +202,9 @@ impl<E: Evaluator> DeepSearch<E> {
 
 impl<E: Evaluator> Searcher<E> for DeepSearch<E> {
     fn search(&self, chess_board: &ChessBoard, evaluator: &E) -> Move {
+
+        println!("Size of cache: {}", self.cache.borrow().len());
+        self.cache.borrow_mut().clear();
 
         for max_depth in 1..self.max_depth {
             self.search_impl(chess_board, evaluator, 0, -INF, INF, max_depth);

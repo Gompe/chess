@@ -9,6 +9,7 @@ const VALUE_KNIGHT : f64 = 3.;
 const VALUE_ROOK : f64 = 5.;
 const VALUE_QUEEN : f64 = 9.;
 
+#[derive(Clone)]
 pub struct MaterialEvaluator {
     value_pawn: f64,
     value_bishop: f64,
@@ -16,6 +17,9 @@ pub struct MaterialEvaluator {
     value_rook: f64,
     value_queen: f64,
 }
+
+unsafe impl Send for MaterialEvaluator {}
+unsafe impl Sync for MaterialEvaluator {}
 
 impl MaterialEvaluator {
     pub fn new() -> MaterialEvaluator {

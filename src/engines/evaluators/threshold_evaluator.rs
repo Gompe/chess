@@ -7,10 +7,18 @@ use ordered_float::OrderedFloat;
 
 const INF : OrderedFloat<f64> = OrderedFloat(1000.0);
 
+#[derive(Clone)]
 pub struct ThresholdEvaluator<E: Evaluator> {
     evaluator: E,
     threshold: OrderedFloat<f64>
 }
+
+
+unsafe impl<E: Evaluator> Send for ThresholdEvaluator<E> 
+where E: Send {}
+
+unsafe impl<E: Evaluator> Sync for ThresholdEvaluator<E> 
+where E: Sync {}
 
 impl<E: Evaluator> ThresholdEvaluator<E> {
     pub fn new(evaluator: E, threshold: OrderedFloat<f64>) -> ThresholdEvaluator<E> {

@@ -10,7 +10,11 @@ const VALUE_ROOK : f64 = 1.;
 const VALUE_QUEEN : f64 = 1.;
 const VALUE_KING : f64 = 0.5;
 
+#[derive(Clone)]
 pub struct PositionalEvaluator;
+
+unsafe impl Send for PositionalEvaluator {}
+unsafe impl Sync for PositionalEvaluator {}
 
 impl PositionalEvaluator {
     pub fn new() -> PositionalEvaluator {

@@ -3,6 +3,7 @@ use crate::engines::engine_traits::*;
 
 use ordered_float::OrderedFloat;
 
+#[derive(Clone)]
 pub struct DynamicEvaluator;
 
 impl DynamicEvaluator {
@@ -10,6 +11,9 @@ impl DynamicEvaluator {
         DynamicEvaluator {}
     }
 }
+
+unsafe impl Send for DynamicEvaluator {}
+unsafe impl Sync for DynamicEvaluator {}
 
 impl Evaluator for DynamicEvaluator {
 

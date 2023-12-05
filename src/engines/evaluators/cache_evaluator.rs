@@ -5,10 +5,15 @@ use crate::chess_server::chess_types::ChessBoard;
 use crate::engines::zobrist_hash::ZobristHashMap;
 
 use ordered_float::OrderedFloat;
+
+#[derive(Clone)]
 pub struct CacheEvaluator<E: Evaluator> {
     evaluator: E,
     cache: RefCell<ZobristHashMap<OrderedFloat<f64>>>
 }
+
+unsafe impl<E: Evaluator> Send for CacheEvaluator<E> 
+where E: Send {}
 
 impl<E: Evaluator> CacheEvaluator<E> {
     pub fn new(evaluator: E) -> CacheEvaluator<E> {

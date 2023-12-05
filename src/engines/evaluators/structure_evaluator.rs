@@ -3,6 +3,7 @@ use crate::engines::engine_traits::*;
 
 use ordered_float::OrderedFloat;
 
+#[derive(Clone)]
 pub struct StructureEvaluator;
 
 impl StructureEvaluator {
@@ -10,6 +11,9 @@ impl StructureEvaluator {
         StructureEvaluator {}
     }
 }
+
+unsafe impl Send for StructureEvaluator {}
+unsafe impl Sync for StructureEvaluator {}
 
 impl Evaluator for StructureEvaluator {
 

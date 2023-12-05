@@ -8,6 +8,9 @@ pub mod structure_evaluator;
 pub mod capture_evaluator;
 pub mod threshold_evaluator;
 pub mod pressure_evaluator;
+pub mod clamp_evaluator;
+pub mod rollout_evaluator;
+pub mod stochastic_rollout;
 
 pub use cache_evaluator::CacheEvaluator;
 pub use linear_evaluator::LinearEvaluator;
@@ -19,3 +22,6 @@ pub use structure_evaluator::StructureEvaluator;
 pub use capture_evaluator::CaptureEvaluator;
 pub use threshold_evaluator::ThresholdEvaluator;
 pub use pressure_evaluator::PressureEvaluator;
+pub use clamp_evaluator::ClampEvaluator;
+pub use rollout_evaluator::RolloutEvaluator;
+pub use stochastic_rollout::StochasticRollout;

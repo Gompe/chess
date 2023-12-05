@@ -5,6 +5,7 @@ use ordered_float::OrderedFloat;
 
 const TURN_ADVANTAGE: f64 = 0.3;
 
+#[derive(Clone)]
 pub struct KingSafetyEvaluator;
 
 impl KingSafetyEvaluator {
@@ -12,6 +13,9 @@ impl KingSafetyEvaluator {
         KingSafetyEvaluator {}
     }
 }
+
+unsafe impl Send for KingSafetyEvaluator {}
+unsafe impl Sync for KingSafetyEvaluator {}
 
 impl Evaluator for KingSafetyEvaluator {
     

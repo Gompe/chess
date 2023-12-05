@@ -10,7 +10,11 @@ const VALUE_ROOK : f64 = 2.;
 const VALUE_QUEEN : f64 = 1.;
 const VALUE_KING : f64 = 0.5;
 
+#[derive(Clone)]
 pub struct PressureEvaluator;
+
+unsafe impl Send for PressureEvaluator {}
+unsafe impl Sync for PressureEvaluator {}
 
 impl PressureEvaluator {
     pub fn new() -> PressureEvaluator {
@@ -87,6 +91,10 @@ impl Evaluator for PressureEvaluator {
                 }
             };
 
+            let (row, col) = square.get_coordinates();
+            let norm = 1. / (3.5 * 3.5);
+
+            eval += pressure * ( 1. - (row as f64 - 3.5).abs() * (col as f64 - 3.5).abs() * norm );
         }
 
         OrderedFloat(eval)
