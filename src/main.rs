@@ -53,7 +53,7 @@ fn main() {
                 LinearEvaluator::new(
                     MaterialEvaluator::new(),
                     PressureEvaluator::new(),
-                    [1.0, 0.05],
+                    [1.0, 0.01],
                 ),
             ),
             OrderedFloat(6.)
@@ -65,7 +65,7 @@ fn main() {
             LinearEvaluator::new(
                 MaterialEvaluator::new(),
                 PressureEvaluator::new(),
-                [1.0, 0.05],
+                [1.0, 0.01],
             ),
         ),
         OrderedFloat(3.00)
@@ -86,13 +86,13 @@ fn main() {
 
 
     let eval_white = StochasticRollout::new(
-        SoftmaxPolicy::new(eval_white.clone(), 0.1),
+        SoftmaxPolicy::new(eval_white.clone(), 0.25),
         eval_white.clone(),
-        20,
+        6,
         5
     );
 
-    let cloned_eval = eval_white.clone();
+    let cloned_eval = eval_policy_white.clone();
 
     let eval_black = CacheEvaluator::new(
         // ThresholdEvaluator::new(
@@ -111,10 +111,10 @@ fn main() {
     let player_white = SearcherEngine::new(
         eval_white, 
         MonteCarloTreeSearch::new(
-            SoftmaxPolicy::new(eval_policy_white, 2.),
+            SoftmaxPolicy::new(eval_policy_white, 0.1),
             40,
-            300, 
-            10.
+            3000, 
+            2.
         )
     );
 

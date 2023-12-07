@@ -32,10 +32,12 @@ struct MctsNode {
     priors: SmallVec<[f64; MOVE_CONTAINER_SIZE]>,
     action_count: SmallVec<[usize; MOVE_CONTAINER_SIZE]>,
     q_values: SmallVec<[f64; MOVE_CONTAINER_SIZE]>,
+
+    node_value: f64
 }
 
 impl MctsNode {
-    fn new(allowed_moves: MoveContainer, priors:SmallVec<[f64; MOVE_CONTAINER_SIZE]>) -> MctsNode {
+    fn new(allowed_moves: MoveContainer, priors:SmallVec<[f64; MOVE_CONTAINER_SIZE]>, node_value: f64) -> MctsNode {
 
         let n = allowed_moves.len();
 
@@ -50,7 +52,9 @@ impl MctsNode {
             allowed_moves: allowed_moves, 
             priors, 
             action_count, 
-            q_values
+            q_values,
+
+            node_value
         }
     }
 }
@@ -127,11 +131,14 @@ impl<E: Evaluator, P: Policy> MonteCarloTreeSearch<E, P> {
                 let allowed_moves = chess_board.get_allowed_moves(color);
                 let priors = self.policy.get_priors(chess_board, &allowed_moves);
 
+                let value = evaluator.evaluate(chess_board);
+
                 let node = Rc::new(
                     RefCell::new(
                         MctsNode::new(
                             allowed_moves,
-                            priors
+                            priors,
+                            value.0
                         )
                     )
                 );
@@ -139,7 +146,7 @@ impl<E: Evaluator, P: Policy> MonteCarloTreeSearch<E, P> {
                 self.insert_cache(chess_board, node.clone());
                 
                 // It was never visited, return eval
-                return evaluator.evaluate(chess_board);
+                return value;
             }
         };
         
@@ -160,7 +167,7 @@ impl<E: Evaluator, P: Policy> MonteCarloTreeSearch<E, P> {
 
                 for i in 0..allowed_moves.len() {
                     let frac_action = (1. + total_visits as f64).sqrt() / (1. + node_ref.action_count[i] as f64);
-                    let u = node_ref.q_values[i] * sign + self.c_puct * node_ref.priors[i] * frac_action;
+                    let u = node_ref.q_values[i] + self.c_puct * node_ref.priors[i] * frac_action;
 
                     if u > max_ubc {
                         best_action = Some(i);
@@ -183,8 +190,10 @@ impl<E: Evaluator, P: Policy> MonteCarloTreeSearch<E, P> {
                 let current_value =  node_ref.q_values[best_action.unwrap()] as f64;
                 let current_action_count = node_ref.action_count[best_action.unwrap()];
 
+                let node_value = node_ref.node_value;
+
                 node_ref.q_values[best_action.unwrap()] += (
-                    (v - current_value) 
+                    ( (v - node_value) * sign - current_value) 
                     / (current_action_count as f64 + 1.)
                 ).0;
 

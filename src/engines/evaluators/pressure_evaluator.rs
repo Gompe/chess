@@ -22,6 +22,8 @@ impl PressureEvaluator {
     }
 }
 
+// TODO: Include Checks
+
 impl Evaluator for PressureEvaluator {
     
     fn get_name(&self) -> String {
@@ -55,7 +57,7 @@ impl Evaluator for PressureEvaluator {
                             heatmap_white[square.get_index() as usize] += piece_value;
                         }
                         if content.get_piece() == Piece::Pawn {
-                            eval += 3.0 * (6 - coordinate.get_coordinates().0) as f64;
+                            eval += 15.0 * (6 - coordinate.get_coordinates().0) as f64;
                         }
                     },
                     Color::Black => {
@@ -63,7 +65,7 @@ impl Evaluator for PressureEvaluator {
                             heatmap_black[square.get_index() as usize] += piece_value;
                         }
                         if content.get_piece() == Piece::Pawn {
-                            eval += -3.0 * (coordinate.get_coordinates().0 - 1) as f64;
+                            eval += -15.0 * (coordinate.get_coordinates().0 - 1) as f64;
                         }
                     }
                 }
@@ -75,6 +77,7 @@ impl Evaluator for PressureEvaluator {
             let content = chess_board.get_square_content(&square);
 
             let pressure = heatmap_white[square_index as usize] - heatmap_black[square_index as usize];
+
             match content {
                 None => eval += pressure,
                 Some(content) => {
@@ -87,7 +90,7 @@ impl Evaluator for PressureEvaluator {
                         Piece::King => VALUE_KING,
                     };
 
-                    eval += pressure / piece_value;
+                    eval += 6. * pressure / piece_value;
                 }
             };
 
@@ -95,6 +98,13 @@ impl Evaluator for PressureEvaluator {
             let norm = 1. / (3.5 * 3.5);
 
             eval += pressure * ( 1. - (row as f64 - 3.5).abs() * (col as f64 - 3.5).abs() * norm );
+        }
+
+        if chess_board.is_king_in_check(chess_board.get_turn_color()) {
+            match chess_board.get_turn_color() {
+                Color::White => eval -= 2.,
+                Color::Black => eval += 2.
+            }
         }
 
         OrderedFloat(eval)
