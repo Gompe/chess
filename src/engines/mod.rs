@@ -10,3 +10,4 @@ pub mod evaluators;
 pub mod policies;
 
 
+pub mod bots;

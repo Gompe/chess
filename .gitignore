@@ -3,6 +3,10 @@
 .conda
 .vscode 
 
+__pycache__/
+*.py[cod]
+*$py.class
+
 ## directories with games
 outputs/
 data/

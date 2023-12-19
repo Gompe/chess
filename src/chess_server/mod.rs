@@ -1,5 +1,6 @@
 pub mod chess_types;
 pub mod game;
+pub mod io;
 
 // pub use chess_types::Color;
 // pub use chess_types::Piece;
