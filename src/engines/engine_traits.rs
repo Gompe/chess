@@ -22,6 +22,7 @@ pub trait Searcher<E: Evaluator> {
     fn search(&self, chess_board: &ChessBoard, evaluator: &E) -> Move;
 }
 
+#[derive(Clone)]
 pub struct SearcherEngine<E: Evaluator, S: Searcher<E>> {
     evaluator: E,
     searcher: S

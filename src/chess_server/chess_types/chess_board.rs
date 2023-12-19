@@ -106,6 +106,32 @@ impl SmallVecChessBoard {
         ChessBoard { board, turn_color: Color::White }
     }
 
+    pub fn board_string(self) -> String {
+
+        let mut s = format!("{}'s turn", match self.turn_color { Color::White => "White", Color::Black => "Black"});
+        s += "\n";
+
+        for _ in 0..8 {
+            s += "+---";
+        }
+        s += "+";
+
+        s += "\n";
+        for (num, maybe_color_piece) in self.board.iter().enumerate() {
+            s += &format!("| {} ", ColorPiece::to_str(maybe_color_piece));
+            if num % 8 == 7 {
+                s += "|\n";
+                for _ in 0..8 {
+                    s += "+---";
+                }
+    
+                s += "+\n";
+            }
+        }
+
+        s
+    }
+
     pub fn print_board(self) {
 
         println!("{}'s turn", match self.turn_color { Color::White => "White", Color::Black => "Black"});

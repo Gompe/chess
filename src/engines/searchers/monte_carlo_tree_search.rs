@@ -1,6 +1,8 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use log::{error, info};
+
 use crate::chess_server::chess_types::Color;
 use crate::chess_server::chess_types::ChessStatus;
 use crate::chess_server::chess_types::Piece;
@@ -63,6 +65,7 @@ fn relu(x: f64) -> f64 {
     max(OrderedFloat(x), OrderedFloat(0.)).0
 }
 
+#[derive(Clone)]
 pub struct MonteCarloTreeSearch<E: Evaluator, P: Policy> {
     policy: P,
     max_depth: usize,
@@ -233,8 +236,8 @@ impl<E: Evaluator, P: Policy> MonteCarloTreeSearch<E, P> {
         let mut max_value = 0;
 
 
-        println!("");
-        println!("Move Eval:");
+        info!("");
+        info!("Move Eval:");
         for i in 0..node_ref.allowed_moves.len() {
             if node_ref.action_count[i] > max_value {
                 best_action = Some(i);
@@ -242,7 +245,7 @@ impl<E: Evaluator, P: Policy> MonteCarloTreeSearch<E, P> {
                 // continue;
             }
 
-            println!("Move {}, Count: {}, Prior: {}, Q-Value: {}", 
+            info!("Move {}, Count: {}, Prior: {}, Q-Value: {}", 
                 node_ref.allowed_moves[i], 
                 node_ref.action_count[i], 
                 100. * node_ref.priors[i],
@@ -256,7 +259,7 @@ impl<E: Evaluator, P: Policy> MonteCarloTreeSearch<E, P> {
             //     max_value = u;
             // }
         }
-        println!("");
+        info!("");
 
         let eval = OrderedFloat(node_ref.q_values[best_action.unwrap()]);
         let mv = Some(node_ref.allowed_moves[best_action.unwrap()]);
@@ -270,8 +273,8 @@ impl<E: Evaluator, P: Policy> Searcher<E> for MonteCarloTreeSearch<E, P> {
 
         let (eval, mv) = self.search_impl(chess_board, evaluator);
         
-        println!("Size of cache: {}", self.cache.borrow().len());
-        println!("Evaluation: {} with move {}", eval, mv.unwrap());
+        info!("Size of cache: {}", self.cache.borrow().len());
+        info!("Evaluation: {} with move {}", eval, mv.unwrap());
 
         mv.unwrap()
     }

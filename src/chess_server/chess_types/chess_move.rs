@@ -9,13 +9,13 @@ impl fmt::Display for Move {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.get_promotion_piece() {
             None => {
-                write!(f, "BasicMove: {}->{}", 
+                write!(f, "{}{}", 
                     self.get_current_square().to_str(), 
                     self.get_next_square().to_str()
                 )
             },
             Some(piece) => {
-                write!(f, "BasicMove: {}->{}, ={}", 
+                write!(f, "{}{}{}", 
                     self.get_current_square().to_str(), 
                     self.get_next_square().to_str(),
                     piece.to_str()

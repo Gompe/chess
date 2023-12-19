@@ -11,6 +11,8 @@ pub mod pressure_evaluator;
 pub mod clamp_evaluator;
 pub mod rollout_evaluator;
 pub mod stochastic_rollout;
+pub mod negate_evaluator;
+pub mod trivial_evaluator;
 
 pub use cache_evaluator::CacheEvaluator;
 pub use linear_evaluator::LinearEvaluator;
@@ -25,3 +27,5 @@ pub use pressure_evaluator::PressureEvaluator;
 pub use clamp_evaluator::ClampEvaluator;
 pub use rollout_evaluator::RolloutEvaluator;
 pub use stochastic_rollout::StochasticRollout;
+pub use negate_evaluator::NegateEvaluator;
+pub use trivial_evaluator::TrivialEvaluator;

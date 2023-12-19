@@ -1,5 +1,8 @@
 /target
 
+.conda
+.vscode 
 
 ## directories with games
 outputs/
+data/

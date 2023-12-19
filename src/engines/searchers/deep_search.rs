@@ -13,12 +13,14 @@ use std::marker::PhantomData;
 use crate::chess_server::chess_types::ChessBoard;
 use crate::chess_server::chess_types::Move;
 
+use log::info;
 use ordered_float::OrderedFloat;
 
 use crate::engines::zobrist_hash::ZobristHashMap;
 
 const INF: OrderedFloat<f64> = OrderedFloat(1000.);
 
+#[derive(Clone)]
 pub struct DeepSearch<E: Evaluator> {
     max_depth: usize,
     cache: RefCell< ZobristHashMap<(OrderedFloat<f64>, Move, u8)> >,
@@ -198,12 +200,27 @@ impl<E: Evaluator> DeepSearch<E> {
             ChessStatus::Draw => (EVAL_DRAW, None)
         }
     }
+
+
+    pub fn search_ext(&self, chess_board: &ChessBoard, evaluator: &E) -> (OrderedFloat<f64>, Move) {
+
+            info!("Size of cache: {}", self.cache.borrow().len());
+            self.cache.borrow_mut().clear();
+    
+            for max_depth in 1..self.max_depth {
+                self.search_impl(chess_board, evaluator, 0, -INF, INF, max_depth);
+            }
+    
+            let (eval, mv) = self.search_impl(chess_board, evaluator, 0, -INF, INF, self.max_depth);    
+    
+            (eval, mv.unwrap())
+    }
 }
 
 impl<E: Evaluator> Searcher<E> for DeepSearch<E> {
     fn search(&self, chess_board: &ChessBoard, evaluator: &E) -> Move {
 
-        println!("Size of cache: {}", self.cache.borrow().len());
+        info!("Size of cache: {}", self.cache.borrow().len());
         self.cache.borrow_mut().clear();
 
         for max_depth in 1..self.max_depth {
@@ -211,7 +228,7 @@ impl<E: Evaluator> Searcher<E> for DeepSearch<E> {
         }
 
         let (eval, mv) = self.search_impl(chess_board, evaluator, 0, -INF, INF, self.max_depth);
-        println!("Evaluation: {} with move {}", eval, mv.unwrap());
+        info!("Evaluation: {} with move {}", eval, mv.unwrap());
 
 
         mv.unwrap()
