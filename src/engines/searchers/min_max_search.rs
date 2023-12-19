@@ -39,15 +39,15 @@ impl<E: Evaluator> MinMaxSearcher<E> {
                         
                         for move_ in allowed_moves {
                             let search_result = self.search_impl(
-                                &chess_board.next_state(&move_), &evaluator, depth + 1
+                                &chess_board.next_state(&move_), evaluator, depth + 1
                             );
                             
-                            if search_result.0 > value || best_move == None {
+                            if search_result.0 > value || best_move.is_none() {
                                 value = search_result.0;
                                 best_move = Some(move_);
                             }
                         }
-                        return (value, best_move);
+                        (value, best_move)
                     } else {
                         // Minimizing Player
                         let mut value = INF;
@@ -55,16 +55,16 @@ impl<E: Evaluator> MinMaxSearcher<E> {
                         
                         for move_ in allowed_moves {
                             let search_result = self.search_impl(
-                                &chess_board.next_state(&move_), &evaluator, depth + 1
+                                &chess_board.next_state(&move_), evaluator, depth + 1
                             );
                             
-                            if search_result.0 < value || best_move == None {
+                            if search_result.0 < value || best_move.is_none() {
                                 value = search_result.0;
                                 best_move = Some(move_);
                             }
                         }
 
-                        return (value, best_move);
+                        (value, best_move)
                     }
                 },
                 ChessStatus::BlackWon => (EVAL_BLACK_WON, None),

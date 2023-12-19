@@ -3,7 +3,7 @@ use crate::chess_server::chess_types::*;
 
 use crate::chess_server::io::utils;
 
-use std::io::{stdin, stdout, Write};
+use std::io::{stdin};
 
 
 pub struct IOPlayer;

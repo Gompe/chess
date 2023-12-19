@@ -1,18 +1,18 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use log::{error, info};
+use log::{info};
 
 use crate::chess_server::chess_types::Color;
 use crate::chess_server::chess_types::ChessStatus;
-use crate::chess_server::chess_types::Piece;
+
 use crate::chess_server::chess_types::chess_board::MOVE_CONTAINER_SIZE;
 use crate::chess_server::chess_types::chess_board::MoveContainer;
 
 use crate::engines::engine_traits::*;
 
 use std::cmp::max;
-use std::cmp::min;
+
 use std::marker::PhantomData;
 
 use crate::chess_server::chess_types::ChessBoard;
@@ -51,7 +51,7 @@ impl MctsNode {
         let q_values: SmallVec<[f64; MOVE_CONTAINER_SIZE]> = smallvec![0.; n];
 
         MctsNode { 
-            allowed_moves: allowed_moves, 
+            allowed_moves, 
             priors, 
             action_count, 
             q_values,
@@ -99,11 +99,7 @@ impl<E: Evaluator, P: Policy> MonteCarloTreeSearch<E, P> {
     }
 
     fn get_mut_node(&self, chess_board: &ChessBoard) -> Option< Rc< RefCell<MctsNode> > > {
-        if let Some(node_ref) = self.cache.borrow_mut().get_key_value(chess_board) {
-            Some(node_ref.clone())
-        } else {
-            None
-        }
+        self.cache.borrow_mut().get_key_value(chess_board).cloned()
     }
 
     fn insert_cache(&self, chess_board: &ChessBoard, node: Rc< RefCell<MctsNode> >) {
@@ -156,7 +152,7 @@ impl<E: Evaluator, P: Policy> MonteCarloTreeSearch<E, P> {
         let node_ref = node_ref.borrow_mut();
         let allowed_moves = &node_ref.allowed_moves;
 
-        match chess_board.get_game_status_from_precomputed(&allowed_moves) {
+        match chess_board.get_game_status_from_precomputed(allowed_moves) {
             ChessStatus::Ongoing => {
                 if !was_visited {
                     return evaluator.evaluate(chess_board);
@@ -190,7 +186,7 @@ impl<E: Evaluator, P: Policy> MonteCarloTreeSearch<E, P> {
                 let node_ref = self.get_mut_node(chess_board).unwrap();
                 let mut node_ref = node_ref.borrow_mut();
 
-                let current_value =  node_ref.q_values[best_action.unwrap()] as f64;
+                let current_value =  node_ref.q_values[best_action.unwrap()];
                 let current_action_count = node_ref.action_count[best_action.unwrap()];
 
                 let node_value = node_ref.node_value;

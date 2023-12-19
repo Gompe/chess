@@ -5,7 +5,7 @@ use crate::chess_server::chess_types::{Color, ChessBoard};
 use crate::engines::engine_traits::*;
 
 use ordered_float::OrderedFloat;
-use smallvec::{SmallVec, smallvec};
+use smallvec::{SmallVec};
 
 #[derive(Clone)]
 pub struct SoftmaxPolicy<E: Evaluator> {

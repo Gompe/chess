@@ -62,7 +62,7 @@ pub fn pikachu() -> Pokemon {
     let is_pre_endgame = |chess_board: &ChessBoard| {
         let mut count = 0;
         for index in 0..64 {
-            if let Some(_) = chess_board.get_square_content(&Square::from_index(index).unwrap()) {
+            if chess_board.get_square_content(&Square::from_index(index).unwrap()).is_some() {
                 count += 1;
             }
         }

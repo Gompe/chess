@@ -22,7 +22,7 @@ impl Player for RandomEngine {
         let mut rng = self.rng.borrow_mut();
 
         if let Some(random_move) = allowed_moves.choose(&mut *rng) {
-            random_move.clone()
+            *random_move
         } else {
             panic!("Game is Over - No allowed moves.");
         }

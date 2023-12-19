@@ -1,6 +1,6 @@
-use std::cmp::{max, min};
 
-use crate::chess_server::chess_types::{Color, Piece, ChessBoard, color, ChessStatus, chess_board};
+
+use crate::chess_server::chess_types::{Color, ChessBoard, ChessStatus};
 use crate::engines::engine_traits::*;
 
 use ordered_float::OrderedFloat;
@@ -40,7 +40,7 @@ impl<P: Policy, E: Evaluator> Evaluator for RolloutEvaluator<P, E> {
     #[inline(always)]
     fn evaluate(&self, chess_board: &ChessBoard) -> OrderedFloat<f64> {
         
-        let mut chess_board = chess_board.clone();
+        let mut chess_board = *chess_board;
 
         let sign = match chess_board.get_turn_color() {
             Color::White => OrderedFloat(1.),
@@ -62,7 +62,7 @@ impl<P: Policy, E: Evaluator> Evaluator for RolloutEvaluator<P, E> {
                     
                     let priors = self.policy.get_priors(&chess_board, &allowed_moves);
 
-                    let index = (0..priors.len()).into_iter().max_by_key(|&index| OrderedFloat(priors[index]) * sign).unwrap();
+                    let index = (0..priors.len()).max_by_key(|&index| OrderedFloat(priors[index]) * sign).unwrap();
 
                     let mv = allowed_moves[index];
 

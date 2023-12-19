@@ -151,10 +151,10 @@ impl<E: Evaluator> DeepSearch<E> {
                     
                     for move_ in allowed_moves {
                         let search_result = self.search_impl(
-                            &chess_board.next_state(&move_), &evaluator, depth + 1, alpha, beta, max_depth
+                            &chess_board.next_state(&move_), evaluator, depth + 1, alpha, beta, max_depth
                         );
                         
-                        if search_result.0 > value || best_move == None {
+                        if search_result.0 > value || best_move.is_none() {
                             value = search_result.0;
                             best_move = Some(move_);
                         }
@@ -167,7 +167,7 @@ impl<E: Evaluator> DeepSearch<E> {
                     }
 
                     self.insert_cache(chess_board, max_depth - depth, value, best_move.unwrap());
-                    return (value, best_move);
+                    (value, best_move)
 
                 } else {
                     // Minimizing Player
@@ -176,10 +176,10 @@ impl<E: Evaluator> DeepSearch<E> {
                     
                     for move_ in allowed_moves {
                         let search_result = self.search_impl(
-                            &chess_board.next_state(&move_), &evaluator, depth + 1, alpha, beta, max_depth
+                            &chess_board.next_state(&move_), evaluator, depth + 1, alpha, beta, max_depth
                         );
                         
-                        if search_result.0 < value || best_move == None {
+                        if search_result.0 < value || best_move.is_none() {
                             value = search_result.0;
                             best_move = Some(move_);
                         }
@@ -192,7 +192,7 @@ impl<E: Evaluator> DeepSearch<E> {
                     }
                     
                     self.insert_cache(chess_board, max_depth - depth, value, best_move.unwrap());
-                    return (value, best_move);
+                    (value, best_move)
                 }
             },
             ChessStatus::BlackWon => (EVAL_BLACK_WON, None),

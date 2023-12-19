@@ -26,7 +26,7 @@ impl<'a, 'b> GameManager<'a, 'b> {
     }
 
     pub fn get_board(&self) -> ChessBoard {
-        self.chess_board.clone()
+        self.chess_board
     }
 
 

@@ -1,18 +1,18 @@
 mod chess_server;
 mod engines;
 
-use std::time::Instant;
 
-use crate::chess_server::chess_types::{chess_board, ChessStatus};
+
+use crate::chess_server::chess_types::{ChessStatus};
 use crate::chess_server::io::io_player::IOPlayer;
 use crate::chess_server::io::utils::board_to_string;
 use crate::engines::bots::pikachu;
 use crate::engines::engine_traits::Evaluator;
 use crate::engines::evaluators::{TrivialEvaluator};
-use crate::engines::if_else_engine::IfElseEngine;
-use crate::engines::searchers::deep_search;
+
+
 use chess_server::chess_types::{
-    Move, Piece, Square, Color, ChessBoard, WHITE_PAWN, WHITE_BISHOP, WHITE_KING, WHITE_KNIGHT, WHITE_ROOK, WHITE_QUEEN, BLACK_PAWN, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK, BLACK_QUEEN, BLACK_KING, piece, square
+    Color, ChessBoard
 };
 
 
@@ -25,35 +25,26 @@ use engines::evaluators::{
     CaptureEvaluator,
     DynamicEvaluator,
     KingSafetyEvaluator,
-    ThresholdEvaluator,
-    StructureEvaluator,
 };
 
 
 use engines::searchers::{
-    MonteCarloTreeSearch,
-    MinMaxSearcher,
-    AlphaBetaSearcher,
-    IterativeDeepening,
-    RepetitionAwareSearcher,
     DeepSearch,
 };
 
 
-use engines::policies::{
-    SoftmaxPolicy
-};
 
 
 
-use chess_server::game::{GameManager, Player};
-use ordered_float::OrderedFloat;
 
-use std::io::{stdin, stdout, Write};
-use csv::{Writer, WriterBuilder};
+use chess_server::game::{Player};
+
+
+use std::io::{stdin, Write};
+use csv::{WriterBuilder};
 use std::fs::File;
 
-use log::{error, info, LevelFilter};
+use log::{info, LevelFilter};
 
 
 #[allow(dead_code)]
@@ -187,6 +178,4 @@ fn main() {
         ChessStatus::Draw => info!("game over: draw"),
         _ => unreachable!()
     }
-
-    return;
 }

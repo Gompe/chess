@@ -66,16 +66,16 @@ impl BoardHash {
                 _ => unreachable!()
             };
 
-            return 1 + (index as usize) * 12 + content_indexer 
+            1 + (index as usize) * 12 + content_indexer 
         };
 
         if chess_board.get_turn_color() == Color::White {
-            state = state ^ zobrist_table[0];
+            state ^= zobrist_table[0];
         }
 
         for (coordinate, content) in chess_board.iter_coordinates() {
             if let Some(content) = content {
-                state = state ^ zobrist_table[make_indexer(coordinate.get_index(), content)];
+                state ^= zobrist_table[make_indexer(coordinate.get_index(), content)];
             }
         }
 
