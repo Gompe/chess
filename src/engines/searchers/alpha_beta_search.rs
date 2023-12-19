@@ -51,10 +51,10 @@ impl<E: Evaluator> AlphaBetaSearcher<E> {
                         
                         for move_ in allowed_moves {
                             let search_result = self.search_impl(
-                                &chess_board.next_state(&move_), &evaluator, depth + 1, alpha, beta
+                                &chess_board.next_state(&move_), evaluator, depth + 1, alpha, beta
                             );
                             
-                            if search_result.0 > value || best_move == None {
+                            if search_result.0 > value || best_move.is_none() {
                                 value = search_result.0;
                                 best_move = Some(move_);
                             }
@@ -66,7 +66,7 @@ impl<E: Evaluator> AlphaBetaSearcher<E> {
                             alpha = max(alpha, value);
                         }
 
-                        return (value, best_move);
+                        (value, best_move)
 
                     } else {
                         // Minimizing Player
@@ -76,10 +76,10 @@ impl<E: Evaluator> AlphaBetaSearcher<E> {
                         
                         for move_ in allowed_moves {
                             let search_result = self.search_impl(
-                                &chess_board.next_state(&move_), &evaluator, depth + 1, alpha, beta
+                                &chess_board.next_state(&move_), evaluator, depth + 1, alpha, beta
                             );
                             
-                            if search_result.0 < value || best_move == None {
+                            if search_result.0 < value || best_move.is_none() {
                                 value = search_result.0;
                                 best_move = Some(move_);
                             }
@@ -91,7 +91,7 @@ impl<E: Evaluator> AlphaBetaSearcher<E> {
                             beta = min(beta, value);
                         }
 
-                        return (value, best_move);
+                        (value, best_move)
                     }
                 },
                 ChessStatus::BlackWon => (EVAL_BLACK_WON, None),

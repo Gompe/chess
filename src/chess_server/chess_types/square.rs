@@ -19,7 +19,7 @@ impl Square {
     }
 
     pub fn from_coordinates(row: i8, col: i8) -> Option<Self> {
-        if (row >= 0) && (row < 8) && (col >= 0) && (col < 8) 
+        if (0..8).contains(&row) && (0..8).contains(&col) 
         {
             unsafe {
                 Some(Self::from_coordinates_unchecked(row, col))
@@ -30,7 +30,7 @@ impl Square {
     }
 
     pub fn from_index(index: i8) -> Option<Self> {
-        if (index >= 0) & (index < 64) {
+        if (0..64).contains(&index) {
             unsafe {
                 Some(Self::from_index_unchecked(index))
             }
@@ -60,7 +60,7 @@ impl Square {
         let new_row = (row as i16) + (d_row as i16);
         let new_col = (col as i16) + (d_col as i16);
 
-        if new_row >= 0 && new_row < 8 && new_col >= 0 && new_col < 8 {
+        if (0..8).contains(&new_row) && (0..8).contains(&new_col) {
             unsafe {
                 Some(Self::from_coordinates_unchecked(new_row as i8, new_col as i8))
             }

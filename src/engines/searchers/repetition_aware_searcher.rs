@@ -143,7 +143,7 @@ impl<E: Evaluator> RepetitionAwareSearcher<E> {
                     // Killer Heuristic
                     if let Some(move_) = best_move {
                         let search_result = self.search_impl(
-                            &chess_board.next_state(&move_), &evaluator, depth + 1, alpha, beta, max_depth
+                            &chess_board.next_state(&move_), evaluator, depth + 1, alpha, beta, max_depth
                         );
                         
                         if search_result.0 > value {
@@ -157,10 +157,10 @@ impl<E: Evaluator> RepetitionAwareSearcher<E> {
                     
                     for move_ in allowed_moves {
                         let search_result = self.search_impl(
-                            &chess_board.next_state(&move_), &evaluator, depth + 1, alpha, beta, max_depth
+                            &chess_board.next_state(&move_), evaluator, depth + 1, alpha, beta, max_depth
                         );
                         
-                        if search_result.0 > value || best_move == None {
+                        if search_result.0 > value || best_move.is_none() {
                             value = search_result.0;
                             best_move = Some(move_);
                         }
@@ -179,7 +179,7 @@ impl<E: Evaluator> RepetitionAwareSearcher<E> {
                     let eval = return_value(value);
 
                     assert_eq!(Some(*chess_board), self.seen_positions.borrow_mut().pop());
-                    return (eval, best_move);
+                    (eval, best_move)
 
                 } else {
                     // Minimizing Player
@@ -189,7 +189,7 @@ impl<E: Evaluator> RepetitionAwareSearcher<E> {
                     // Killer Heuristic
                     if let Some(move_) = best_move {
                         let search_result = self.search_impl(
-                            &chess_board.next_state(&move_), &evaluator, depth + 1, alpha, beta, max_depth
+                            &chess_board.next_state(&move_), evaluator, depth + 1, alpha, beta, max_depth
                         );
                         
                         if search_result.0 < value {
@@ -202,10 +202,10 @@ impl<E: Evaluator> RepetitionAwareSearcher<E> {
 
                     for move_ in allowed_moves {
                         let search_result = self.search_impl(
-                            &chess_board.next_state(&move_), &evaluator, depth + 1, alpha, beta, max_depth
+                            &chess_board.next_state(&move_), evaluator, depth + 1, alpha, beta, max_depth
                         );
                         
-                        if search_result.0 < value || best_move == None {
+                        if search_result.0 < value || best_move.is_none() {
                             value = search_result.0;
                             best_move = Some(move_);
                         }
@@ -225,7 +225,7 @@ impl<E: Evaluator> RepetitionAwareSearcher<E> {
                     let eval = return_value(value);
 
                     assert_eq!(Some(*chess_board), self.seen_positions.borrow_mut().pop());
-                    return (eval, best_move);
+                    (eval, best_move)
                 }
             },
             ChessStatus::BlackWon => (EVAL_BLACK_WON, None),

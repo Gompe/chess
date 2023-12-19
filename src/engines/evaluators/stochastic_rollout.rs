@@ -1,7 +1,7 @@
-use std::cmp::{max, min};
-use std::sync::Arc;
 
-use crate::chess_server::chess_types::{Color, Piece, ChessBoard, color, ChessStatus, chess_board};
+
+
+use crate::chess_server::chess_types::{ChessBoard, ChessStatus};
 use crate::engines::engine_traits::*;
 
 use ordered_float::OrderedFloat;
@@ -9,7 +9,7 @@ use ordered_float::OrderedFloat;
 use rand::prelude::*;
 use rand::distributions::WeightedIndex;
 
-use smallvec::{smallvec, SmallVec};
+use smallvec::{SmallVec};
 use std::thread;
 
 #[derive(Clone)]
@@ -45,7 +45,7 @@ where P: Send + Sync, E: Send + Sync  {
         let mut rng = rand::thread_rng();
 
         let iteration = |rng: &mut ThreadRng| {
-            let mut chess_board = chess_board.clone();
+            let mut chess_board = *chess_board;
             let mut depth = 0;
             
             loop {

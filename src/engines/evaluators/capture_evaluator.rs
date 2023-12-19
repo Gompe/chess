@@ -1,6 +1,6 @@
 use std::cmp::{max, min};
 
-use crate::chess_server::chess_types::{Color, Piece, ChessBoard, color};
+use crate::chess_server::chess_types::{Color, Piece, ChessBoard};
 use crate::engines::engine_traits::*;
 
 use ordered_float::OrderedFloat;
@@ -37,7 +37,7 @@ impl<E: Evaluator> Evaluator for CaptureEvaluator<E> {
     #[inline(always)]
     fn evaluate(&self, chess_board: &ChessBoard) -> OrderedFloat<f64> {
         
-        let mut eval = self.evaluator.evaluate(chess_board);
+        let eval = self.evaluator.evaluate(chess_board);
         let mut adjusted_eval = eval;
 
         let mut pressure = [0; 64];

@@ -1,13 +1,13 @@
 use crate::chess_server::chess_types::*;
 
-use std::io::{stdin, stdout, Write};
 
-use std::fs::File;
-use log::{error, info, LevelFilter};
 
-use csv::{Writer, WriterBuilder};
 
-use rand::{thread_rng, Rng, random};
+
+
+
+
+use rand::{thread_rng, Rng};
 use rand::distributions::Alphanumeric;
 
 use serde::Serialize;
@@ -116,14 +116,14 @@ pub fn parse_move(move_str: &str) -> Move {
         parse_row(move_str[3]), parse_col(move_str[2])
     ).unwrap();
 
-    let mv = {
+    
+
+    {
         if move_str.len() == 4 {
             Move::new_normal_move(current_square, next_square)
         } else {
             let piece = parse_piece(move_str[4]);
             Move::new_promotion_move(current_square, next_square, piece)
         }
-    };
-
-    mv
+    }
 }

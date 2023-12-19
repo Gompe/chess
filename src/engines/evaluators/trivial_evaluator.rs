@@ -1,4 +1,4 @@
-use crate::chess_server::chess_types::{Color, ChessBoard};
+use crate::chess_server::chess_types::{ChessBoard};
 use crate::engines::engine_traits::*;
 
 use ordered_float::OrderedFloat;
@@ -22,7 +22,7 @@ impl Evaluator for TrivialEvaluator {
     }
     
     #[inline(always)]
-    fn evaluate(&self, chess_board: &ChessBoard) -> OrderedFloat<f64> {
+    fn evaluate(&self, _chess_board: &ChessBoard) -> OrderedFloat<f64> {
         OrderedFloat(0.)
     }
 }

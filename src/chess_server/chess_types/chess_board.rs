@@ -41,38 +41,34 @@ impl SmallVecChessBoard {
     }
     
     pub fn get_game_status_from_precomputed(&self, allowed_moves: &MoveContainer) -> ChessStatus {
-        if allowed_moves.len() > 0 {
+        if !allowed_moves.is_empty() {
             ChessStatus::Ongoing
-        } else {
-            if self.is_king_in_check(self.turn_color) {
-                match self.turn_color {
-                    Color::White => ChessStatus::BlackWon,
-                    Color::Black => ChessStatus::WhiteWon
-                }
-            } else {
-                ChessStatus::Draw
+        } else if self.is_king_in_check(self.turn_color) {
+            match self.turn_color {
+                Color::White => ChessStatus::BlackWon,
+                Color::Black => ChessStatus::WhiteWon
             }
+        } else {
+            ChessStatus::Draw
         }
     }
 
     pub fn get_game_status(&self) -> ChessStatus {
-        if self.get_allowed_moves(self.turn_color).len() > 0 {
+        if !self.get_allowed_moves(self.turn_color).is_empty() {
             ChessStatus::Ongoing
-        } else {
-            if self.is_king_in_check(self.turn_color) {
-                match self.turn_color {
-                    Color::White => ChessStatus::BlackWon,
-                    Color::Black => ChessStatus::WhiteWon
-                }
-            } else {
-                ChessStatus::Draw
+        } else if self.is_king_in_check(self.turn_color) {
+            match self.turn_color {
+                Color::White => ChessStatus::BlackWon,
+                Color::Black => ChessStatus::WhiteWon
             }
+        } else {
+            ChessStatus::Draw
         }
     }
 
     pub fn next_state(&self, mv: &Move) -> Self {
 
-        let mut next_board = self.clone();
+        let mut next_board = *self;
 
         next_board.turn_color = match self.turn_color {
             Color::Black => Color::White,
@@ -141,16 +137,16 @@ impl SmallVecChessBoard {
         }
         print!("+");
 
-        print!("\n");
+        println!();
         for (num, maybe_color_piece) in self.board.iter().enumerate() {
             print!("| {} ", ColorPiece::to_str(maybe_color_piece));
             if num % 8 == 7 {
-                print!("|\n");
+                println!("|");
                 for _ in 0..8 {
                     print!("+---");
                 }
     
-                print!("+\n");
+                println!("+");
             }
 
         }
@@ -164,7 +160,7 @@ impl SmallVecChessBoard {
 
         while let Some(position) = maybe_position {
             output.push(position);
-            if self.get_square_content(&position) != None { 
+            if self.get_square_content(&position).is_some() { 
                 break;
             }
 
@@ -302,11 +298,11 @@ impl SmallVecChessBoard {
 
             if color_piece.get_color() == Color::White {
                 let front_square = coordinate.add(-1, 0).unwrap();
-                if self.get_square_content(&front_square) == None {
+                if self.get_square_content(&front_square).is_none() {
                     pawn_moves.push(front_square);
                     if row == 6 {
                         let front_square = front_square.add(-1, 0).unwrap();
-                        if self.get_square_content(&front_square) == None {
+                        if self.get_square_content(&front_square).is_none() {
                             pawn_moves.push(front_square);
                         }
                     }
@@ -330,11 +326,11 @@ impl SmallVecChessBoard {
 
             } else {
                 let front_square = coordinate.add(1, 0).unwrap();
-                if self.get_square_content(&front_square) == None {
+                if self.get_square_content(&front_square).is_none() {
                     pawn_moves.push(front_square);
                     if row == 1 {
                         let front_square = front_square.add(1, 0).unwrap();
-                        if self.get_square_content(&front_square) == None {
+                        if self.get_square_content(&front_square).is_none() {
                             pawn_moves.push(front_square);
                         }
                     }
@@ -391,7 +387,7 @@ impl SmallVecChessBoard {
     // Returns true if the square could be captured by a piece of the specified
     // color. This ignores checks.
     fn capture_helper(&self, coordinate: &Square, color: Color) -> bool {
-        match self.get_square_content(&coordinate) {
+        match self.get_square_content(coordinate) {
             None => true,
             Some(color_piece) => color_piece.get_color() != color
         }
@@ -536,7 +532,7 @@ impl SmallVecChessBoard {
         output
     }
 
-    pub fn iter_coordinates<'a>(&'a self) -> impl Iterator<Item = (Square, Option<ColorPiece>)> + 'a {
+    pub fn iter_coordinates(&self) -> impl Iterator<Item = (Square, Option<ColorPiece>)> + '_ {
         (0..64).map(move |index| (Square::from_index(index as i8).unwrap(), *self.board.get(index).unwrap()))
     }
 }
