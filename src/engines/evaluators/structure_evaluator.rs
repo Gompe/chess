@@ -1,4 +1,4 @@
-use crate::chess_server::chess_types::{Color, ChessBoard};
+use crate::chess_server::chess_types::{ChessBoard, Color};
 use crate::engines::engine_traits::*;
 
 use ordered_float::OrderedFloat;
@@ -16,19 +16,16 @@ unsafe impl Send for StructureEvaluator {}
 unsafe impl Sync for StructureEvaluator {}
 
 impl Evaluator for StructureEvaluator {
-
     fn get_name(&self) -> String {
         "StructureEvaluator".to_string()
     }
-    
+
     #[inline(always)]
     fn evaluate(&self, chess_board: &ChessBoard) -> OrderedFloat<f64> {
-        
         // 1 point of advantage for player who has the move
         let mut eval = 0.;
 
         for (coordinate, content) in chess_board.iter_coordinates() {
-            
             if let Some(content) = content {
                 let sign = match content.get_color() {
                     Color::White => 1.,

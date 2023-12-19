@@ -1,13 +1,13 @@
-use crate::chess_server::chess_types::{Color, Piece, ChessBoard};
+use crate::chess_server::chess_types::{ChessBoard, Color, Piece};
 use crate::engines::engine_traits::*;
 
 use ordered_float::OrderedFloat;
 
-const VALUE_PAWN : f64 = 1.;
-const VALUE_BISHOP : f64 = 3.;
-const VALUE_KNIGHT : f64 = 3.;
-const VALUE_ROOK : f64 = 5.;
-const VALUE_QUEEN : f64 = 9.;
+const VALUE_PAWN: f64 = 1.;
+const VALUE_BISHOP: f64 = 3.;
+const VALUE_KNIGHT: f64 = 3.;
+const VALUE_ROOK: f64 = 5.;
+const VALUE_QUEEN: f64 = 9.;
 
 #[derive(Clone)]
 pub struct MaterialEvaluator {
@@ -23,29 +23,28 @@ unsafe impl Sync for MaterialEvaluator {}
 
 impl MaterialEvaluator {
     pub fn new() -> MaterialEvaluator {
-        MaterialEvaluator { 
-            value_pawn: VALUE_PAWN, 
-            value_bishop: VALUE_BISHOP, 
-            value_knight: VALUE_KNIGHT, 
-            value_rook: VALUE_ROOK, 
-            value_queen: VALUE_QUEEN 
+        MaterialEvaluator {
+            value_pawn: VALUE_PAWN,
+            value_bishop: VALUE_BISHOP,
+            value_knight: VALUE_KNIGHT,
+            value_rook: VALUE_ROOK,
+            value_queen: VALUE_QUEEN,
         }
     }
 
-    // TODO: Create a "ParametrizedEvaluator" trait 
+    // TODO: Create a "ParametrizedEvaluator" trait
     pub fn from_coef(coef: [f64; 5]) -> MaterialEvaluator {
-        MaterialEvaluator { 
-            value_pawn: coef[0], 
-            value_bishop: coef[1], 
-            value_knight: coef[2], 
-            value_rook: coef[3], 
-            value_queen: coef[4] 
+        MaterialEvaluator {
+            value_pawn: coef[0],
+            value_bishop: coef[1],
+            value_knight: coef[2],
+            value_rook: coef[3],
+            value_queen: coef[4],
         }
     }
 }
 
 impl Evaluator for MaterialEvaluator {
-
     fn get_name(&self) -> String {
         "MaterialEvaluator".to_string()
     }
@@ -55,7 +54,6 @@ impl Evaluator for MaterialEvaluator {
         let mut eval = 0.;
 
         for (_, content) in chess_board.iter_coordinates() {
-            
             if let Some(content) = content {
                 let sign = match content.get_color() {
                     Color::White => 1.,

@@ -1,4 +1,3 @@
-
 use crate::engines::engine_traits::*;
 
 use crate::chess_server::chess_types::ChessBoard;
@@ -10,22 +9,17 @@ pub struct NegateEvaluator<E: Evaluator> {
     evaluator: E,
 }
 
-unsafe impl<E: Evaluator> Send for NegateEvaluator<E> 
-where E: Send {}
+unsafe impl<E: Evaluator> Send for NegateEvaluator<E> where E: Send {}
 
-unsafe impl<E: Evaluator> Sync for NegateEvaluator<E> 
-where E: Sync {}
+unsafe impl<E: Evaluator> Sync for NegateEvaluator<E> where E: Sync {}
 
 impl<E: Evaluator> NegateEvaluator<E> {
     pub fn new(evaluator: E) -> NegateEvaluator<E> {
-        NegateEvaluator { 
-            evaluator,
-        }
+        NegateEvaluator { evaluator }
     }
 }
 
 impl<E: Evaluator> Evaluator for NegateEvaluator<E> {
-
     fn get_name(&self) -> String {
         format!("NegateEvaluator({})", self.evaluator.get_name())
     }
@@ -35,4 +29,3 @@ impl<E: Evaluator> Evaluator for NegateEvaluator<E> {
         -self.evaluator.evaluate(chess_board)
     }
 }
-

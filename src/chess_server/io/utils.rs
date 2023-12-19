@@ -1,21 +1,12 @@
 use crate::chess_server::chess_types::*;
 
-
-
-
-
-
-
-
-use rand::{thread_rng, Rng};
 use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng};
 
 use serde::Serialize;
 
 pub fn random_string(n: usize) -> String {
-    let string = thread_rng().sample_iter(&Alphanumeric)
-                .take(n)
-                .collect();
+    let string = thread_rng().sample_iter(&Alphanumeric).take(n).collect();
 
     String::from_utf8(string).unwrap().to_lowercase()
 }
@@ -29,7 +20,7 @@ pub struct Row {
     pub positional_eval: f64,
     pub pressure_eval: f64,
     pub capture_eval: f64,
-    pub target_eval: f64
+    pub target_eval: f64,
 }
 
 pub fn board_to_string(chess_board: &ChessBoard) -> String {
@@ -47,7 +38,7 @@ pub fn board_to_string(chess_board: &ChessBoard) -> String {
         BLACK_KNIGHT,
         BLACK_ROOK,
         BLACK_QUEEN,
-        BLACK_KING
+        BLACK_KING,
     ];
 
     for piece in piece_order {
@@ -65,58 +56,47 @@ pub fn board_to_string(chess_board: &ChessBoard) -> String {
 }
 
 pub fn parse_move(move_str: &str) -> Move {
-
     let move_str: Vec<char> = move_str.trim().chars().collect();
 
     assert!((move_str.len() == 4) || (move_str.len() == 5));
 
-    let parse_col = |ch: char| {
-        match ch {
-            'a' => 0,
-            'b' => 1,
-            'c' => 2,
-            'd' => 3,
-            'e' => 4,
-            'f' => 5,
-            'g' => 6,
-            'h' => 7,
-            _ => unreachable!()
-        }
+    let parse_col = |ch: char| match ch {
+        'a' => 0,
+        'b' => 1,
+        'c' => 2,
+        'd' => 3,
+        'e' => 4,
+        'f' => 5,
+        'g' => 6,
+        'h' => 7,
+        _ => unreachable!(),
     };
 
-    let parse_row = |ch: char| {
-        match ch {
-            '1' => 7,
-            '2' => 6,
-            '3' => 5,
-            '4' => 4,
-            '5' => 3,
-            '6' => 2,
-            '7' => 1,
-            '8' => 0,
-            _ => unreachable!()
-        }
+    let parse_row = |ch: char| match ch {
+        '1' => 7,
+        '2' => 6,
+        '3' => 5,
+        '4' => 4,
+        '5' => 3,
+        '6' => 2,
+        '7' => 1,
+        '8' => 0,
+        _ => unreachable!(),
     };
 
-    let parse_piece = |ch: char| {
-        match ch {
-            'b' => Piece::Bishop,
-            'k' => Piece::Knight,
-            'r' => Piece::Rook,
-            'q' => Piece::Queen,
-            _ => unreachable!()
-        }
+    let parse_piece = |ch: char| match ch {
+        'b' => Piece::Bishop,
+        'k' => Piece::Knight,
+        'r' => Piece::Rook,
+        'q' => Piece::Queen,
+        _ => unreachable!(),
     };
 
-    let current_square = Square::from_coordinates(
-        parse_row(move_str[1]), parse_col(move_str[0])
-    ).unwrap();
+    let current_square =
+        Square::from_coordinates(parse_row(move_str[1]), parse_col(move_str[0])).unwrap();
 
-    let next_square = Square::from_coordinates(
-        parse_row(move_str[3]), parse_col(move_str[2])
-    ).unwrap();
-
-    
+    let next_square =
+        Square::from_coordinates(parse_row(move_str[3]), parse_col(move_str[2])).unwrap();
 
     {
         if move_str.len() == 4 {

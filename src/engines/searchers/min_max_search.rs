@@ -1,5 +1,5 @@
-use crate::chess_server::chess_types::Color;
 use crate::chess_server::chess_types::ChessStatus;
+use crate::chess_server::chess_types::Color;
 use crate::engines::engine_traits::*;
 use std::marker::PhantomData;
 
@@ -20,10 +20,18 @@ impl<E: Evaluator> MinMaxSearcher<E> {
             panic!("Max depth must be at least 1.")
         }
 
-        MinMaxSearcher { max_depth, phantom: PhantomData }
+        MinMaxSearcher {
+            max_depth,
+            phantom: PhantomData,
+        }
     }
 
-    fn search_impl(&self, chess_board: &ChessBoard, evaluator: &E, depth: usize) -> (OrderedFloat<f64>, Option<Move>) {
+    fn search_impl(
+        &self,
+        chess_board: &ChessBoard,
+        evaluator: &E,
+        depth: usize,
+    ) -> (OrderedFloat<f64>, Option<Move>) {
         if depth == self.max_depth {
             (evaluator.evaluate(chess_board), None)
         } else {
@@ -36,12 +44,14 @@ impl<E: Evaluator> MinMaxSearcher<E> {
                         // Maximizing Player
                         let mut value = -INF;
                         let mut best_move: Option<Move> = None;
-                        
+
                         for move_ in allowed_moves {
                             let search_result = self.search_impl(
-                                &chess_board.next_state(&move_), evaluator, depth + 1
+                                &chess_board.next_state(&move_),
+                                evaluator,
+                                depth + 1,
                             );
-                            
+
                             if search_result.0 > value || best_move.is_none() {
                                 value = search_result.0;
                                 best_move = Some(move_);
@@ -52,12 +62,14 @@ impl<E: Evaluator> MinMaxSearcher<E> {
                         // Minimizing Player
                         let mut value = INF;
                         let mut best_move: Option<Move> = None;
-                        
+
                         for move_ in allowed_moves {
                             let search_result = self.search_impl(
-                                &chess_board.next_state(&move_), evaluator, depth + 1
+                                &chess_board.next_state(&move_),
+                                evaluator,
+                                depth + 1,
                             );
-                            
+
                             if search_result.0 < value || best_move.is_none() {
                                 value = search_result.0;
                                 best_move = Some(move_);
@@ -66,10 +78,10 @@ impl<E: Evaluator> MinMaxSearcher<E> {
 
                         (value, best_move)
                     }
-                },
+                }
                 ChessStatus::BlackWon => (EVAL_BLACK_WON, None),
                 ChessStatus::WhiteWon => (EVAL_WHITE_WON, None),
-                ChessStatus::Draw => (EVAL_DRAW, None)
+                ChessStatus::Draw => (EVAL_DRAW, None),
             }
         }
     }

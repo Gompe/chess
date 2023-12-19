@@ -1,22 +1,20 @@
-use crate::chess_server::game::*;
 use crate::chess_server::chess_types::*;
+use crate::chess_server::game::*;
 
 use crate::chess_server::io::utils;
 
-use std::io::{stdin};
-
+use std::io::stdin;
 
 pub struct IOPlayer;
 
 impl IOPlayer {
     pub fn new() -> IOPlayer {
-        IOPlayer{}
+        IOPlayer {}
     }
 }
 
 impl Player for IOPlayer {
     fn select_move(&self, chess_board: &ChessBoard) -> Move {
-        
         let allowed_moves = chess_board.get_allowed_moves(chess_board.get_turn_color());
 
         loop {
@@ -24,13 +22,12 @@ impl Player for IOPlayer {
             stdin().read_line(&mut s).expect("Crashed waiting for move");
 
             let mv = utils::parse_move(&s);
-            
+
             if allowed_moves.contains(&mv) {
-                return mv
+                return mv;
             } else {
                 println!("Invalid move: {}", mv);
             }
         }
     }
 }
-

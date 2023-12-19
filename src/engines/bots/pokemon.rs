@@ -2,7 +2,7 @@ use crate::chess_server::chess_types::*;
 use crate::chess_server::game::Player;
 
 pub struct Pokemon {
-    engine: Box<dyn Player>
+    engine: Box<dyn Player>,
 }
 
 impl Pokemon {

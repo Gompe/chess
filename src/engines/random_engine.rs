@@ -1,9 +1,8 @@
-use crate::chess_server::game::Player;
 use crate::chess_server::chess_types::{ChessBoard, Move};
+use crate::chess_server::game::Player;
 
-use rand::{seq::SliceRandom, thread_rng, rngs::ThreadRng}; // 0.6.1
+use rand::{rngs::ThreadRng, seq::SliceRandom, thread_rng}; // 0.6.1
 use std::cell::RefCell;
-
 
 pub struct RandomEngine {
     rng: RefCell<ThreadRng>,
@@ -11,13 +10,14 @@ pub struct RandomEngine {
 
 impl RandomEngine {
     pub fn new() -> RandomEngine {
-        RandomEngine { rng: RefCell::new(thread_rng()) }
+        RandomEngine {
+            rng: RefCell::new(thread_rng()),
+        }
     }
 }
 
 impl Player for RandomEngine {
     fn select_move(&self, chess_board: &ChessBoard) -> Move {
-        
         let allowed_moves = chess_board.get_allowed_moves(chess_board.get_turn_color());
         let mut rng = self.rng.borrow_mut();
 

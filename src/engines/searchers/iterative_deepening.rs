@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 
-use crate::chess_server::chess_types::Color;
 use crate::chess_server::chess_types::ChessStatus;
+use crate::chess_server::chess_types::Color;
 use crate::chess_server::chess_types::Piece;
 use crate::engines::engine_traits::*;
 
@@ -20,7 +20,7 @@ const INF: OrderedFloat<f64> = OrderedFloat(1000.);
 
 pub struct IterativeDeepening<E: Evaluator> {
     max_depth: usize,
-    cache: RefCell< ZobristHashMap<(OrderedFloat<f64>, Move, u8)> >,
+    cache: RefCell<ZobristHashMap<(OrderedFloat<f64>, Move, u8)>>,
     phantom: PhantomData<E>,
 }
 
@@ -30,40 +30,53 @@ impl<E: Evaluator> IterativeDeepening<E> {
             panic!("Max depth must be at least 1.")
         }
 
-        IterativeDeepening { max_depth, phantom: PhantomData, cache: RefCell::new(ZobristHashMap::new()) }
+        IterativeDeepening {
+            max_depth,
+            phantom: PhantomData,
+            cache: RefCell::new(ZobristHashMap::new()),
+        }
     }
 
     fn get_cached(&self, chess_board: &ChessBoard) -> Option<(OrderedFloat<f64>, Move, u8)> {
-        if let Some(&(eval, move_, depth_from_point)) = self.cache.borrow().get_key_value(chess_board) {
+        if let Some(&(eval, move_, depth_from_point)) =
+            self.cache.borrow().get_key_value(chess_board)
+        {
             return Some((eval, move_, depth_from_point));
         }
 
         None
     }
 
-    fn insert_cache(&self, chess_board: &ChessBoard, depth_from_point: usize, eval: OrderedFloat<f64>, move_: Move) {
-        self.cache.borrow_mut().insert(chess_board, (eval, move_, depth_from_point as u8));
+    fn insert_cache(
+        &self,
+        chess_board: &ChessBoard,
+        depth_from_point: usize,
+        eval: OrderedFloat<f64>,
+        move_: Move,
+    ) {
+        self.cache
+            .borrow_mut()
+            .insert(chess_board, (eval, move_, depth_from_point as u8));
     }
 
     fn search_impl(
-        &self, chess_board: &ChessBoard, 
-        evaluator: &E, 
+        &self,
+        chess_board: &ChessBoard,
+        evaluator: &E,
         depth: usize,
         alpha: OrderedFloat<f64>,
         beta: OrderedFloat<f64>,
-        max_depth: usize
-
+        max_depth: usize,
     ) -> (OrderedFloat<f64>, Option<Move>) {
-
         if depth == max_depth {
             return (evaluator.evaluate(chess_board), None);
-        } 
+        }
 
         let mut best_move = None;
 
         if let Some((eval, move_, depth_from_point)) = self.get_cached(chess_board) {
             if depth_from_point >= (max_depth - depth) as u8 {
-                return (eval, Some(move_))
+                return (eval, Some(move_));
             }
 
             best_move = Some(move_);
@@ -74,56 +87,75 @@ impl<E: Evaluator> IterativeDeepening<E> {
                 let color = chess_board.get_turn_color();
                 let mut allowed_moves = chess_board.get_allowed_moves(color);
 
-                
                 if depth == 0 {
                     if color == Color::White {
-                        allowed_moves.sort_by_key(|&move_| -evaluator.evaluate(&chess_board.next_state(&move_)));
+                        allowed_moves.sort_by_key(|&move_| {
+                            -evaluator.evaluate(&chess_board.next_state(&move_))
+                        });
                     } else {
-                        allowed_moves.sort_by_key(|&move_| evaluator.evaluate(&chess_board.next_state(&move_)));
+                        allowed_moves.sort_by_key(|&move_| {
+                            evaluator.evaluate(&chess_board.next_state(&move_))
+                        });
                     }
                 } else {
-                    let get_piece_value = |x: Piece| {
-                        match x {
-                            Piece::Pawn => 1,
-                            Piece::Knight => 2,
-                            Piece::Bishop => 3,
-                            Piece::Rook => 4,
-                            Piece::Queen => 5,
-                            Piece::King => 6,
-                        }
+                    let get_piece_value = |x: Piece| match x {
+                        Piece::Pawn => 1,
+                        Piece::Knight => 2,
+                        Piece::Bishop => 3,
+                        Piece::Rook => 4,
+                        Piece::Queen => 5,
+                        Piece::King => 6,
                     };
-                    
+
                     if color == Color::White {
                         allowed_moves.sort_by_key(|&move_| {
-                            if chess_board.contains_piece_of_color(&move_.get_next_square(), Color::Black) {
-                                -get_piece_value(chess_board.get_square_content(&move_.get_next_square()).unwrap().get_piece())
+                            if chess_board
+                                .contains_piece_of_color(&move_.get_next_square(), Color::Black)
+                            {
+                                -get_piece_value(
+                                    chess_board
+                                        .get_square_content(&move_.get_next_square())
+                                        .unwrap()
+                                        .get_piece(),
+                                )
                             } else {
                                 0
                             }
                         });
                     } else {
                         allowed_moves.sort_by_key(|&move_| {
-                            if chess_board.contains_piece_of_color(&move_.get_next_square(), Color::White) {
-                                -get_piece_value(chess_board.get_square_content(&move_.get_next_square()).unwrap().get_piece())
+                            if chess_board
+                                .contains_piece_of_color(&move_.get_next_square(), Color::White)
+                            {
+                                -get_piece_value(
+                                    chess_board
+                                        .get_square_content(&move_.get_next_square())
+                                        .unwrap()
+                                        .get_piece(),
+                                )
                             } else {
                                 0
                             }
                         });
                     }
                 }
-            
-                
+
                 if color == Color::White {
                     // Maximizing Player
                     let mut value = -INF;
                     let mut alpha = alpha;
-                    
+
                     // Killer Heuristic
                     if let Some(move_) = best_move {
                         let search_result = self.search_impl(
-                            &chess_board.next_state(&move_), evaluator, depth + 1, alpha, beta, max_depth
+                            &chess_board.next_state(&move_),
+                            evaluator,
+                            depth + 1,
+                            alpha,
+                            beta,
+                            max_depth,
                         );
-                        
+
                         if search_result.0 > value {
                             value = search_result.0;
                             best_move = Some(move_);
@@ -132,12 +164,16 @@ impl<E: Evaluator> IterativeDeepening<E> {
                         alpha = max(alpha, value);
                     };
 
-                    
                     for move_ in allowed_moves {
                         let search_result = self.search_impl(
-                            &chess_board.next_state(&move_), evaluator, depth + 1, alpha, beta, max_depth
+                            &chess_board.next_state(&move_),
+                            evaluator,
+                            depth + 1,
+                            alpha,
+                            beta,
+                            max_depth,
                         );
-                        
+
                         if search_result.0 > value || best_move.is_none() {
                             value = search_result.0;
                             best_move = Some(move_);
@@ -153,18 +189,22 @@ impl<E: Evaluator> IterativeDeepening<E> {
                     self.insert_cache(chess_board, max_depth - depth, value, best_move.unwrap());
 
                     (value, best_move)
-
                 } else {
                     // Minimizing Player
                     let mut value = INF;
                     let mut beta = beta;
-                    
+
                     // Killer Heuristic
                     if let Some(move_) = best_move {
                         let search_result = self.search_impl(
-                            &chess_board.next_state(&move_), evaluator, depth + 1, alpha, beta, max_depth
+                            &chess_board.next_state(&move_),
+                            evaluator,
+                            depth + 1,
+                            alpha,
+                            beta,
+                            max_depth,
                         );
-                        
+
                         if search_result.0 < value {
                             value = search_result.0;
                             best_move = Some(move_);
@@ -175,9 +215,14 @@ impl<E: Evaluator> IterativeDeepening<E> {
 
                     for move_ in allowed_moves {
                         let search_result = self.search_impl(
-                            &chess_board.next_state(&move_), evaluator, depth + 1, alpha, beta, max_depth
+                            &chess_board.next_state(&move_),
+                            evaluator,
+                            depth + 1,
+                            alpha,
+                            beta,
+                            max_depth,
                         );
-                        
+
                         if search_result.0 < value || best_move.is_none() {
                             value = search_result.0;
                             best_move = Some(move_);
@@ -189,15 +234,15 @@ impl<E: Evaluator> IterativeDeepening<E> {
 
                         beta = min(beta, value);
                     }
-                    
+
                     self.insert_cache(chess_board, max_depth - depth, value, best_move.unwrap());
 
                     (value, best_move)
                 }
-            },
+            }
             ChessStatus::BlackWon => (EVAL_BLACK_WON, None),
             ChessStatus::WhiteWon => (EVAL_WHITE_WON, None),
-            ChessStatus::Draw => (EVAL_DRAW, None)
+            ChessStatus::Draw => (EVAL_DRAW, None),
         }
     }
 }
@@ -208,6 +253,8 @@ impl<E: Evaluator> Searcher<E> for IterativeDeepening<E> {
             self.search_impl(chess_board, evaluator, 0, -INF, INF, max_depth);
         }
 
-        self.search_impl(chess_board, evaluator, 0, -INF, INF, self.max_depth).1.unwrap()
+        self.search_impl(chess_board, evaluator, 0, -INF, INF, self.max_depth)
+            .1
+            .unwrap()
     }
 }

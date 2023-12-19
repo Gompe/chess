@@ -1,4 +1,4 @@
-use crate::chess_server::chess_types::{Color, Square, ChessBoard};
+use crate::chess_server::chess_types::{ChessBoard, Color, Square};
 use crate::engines::engine_traits::*;
 
 use ordered_float::OrderedFloat;
@@ -18,17 +18,19 @@ unsafe impl Send for KingSafetyEvaluator {}
 unsafe impl Sync for KingSafetyEvaluator {}
 
 impl Evaluator for KingSafetyEvaluator {
-    
     fn get_name(&self) -> String {
         "KingSafetyEvaluator".to_string()
     }
 
     #[inline(always)]
     fn evaluate(&self, chess_board: &ChessBoard) -> OrderedFloat<f64> {
-        
         // 1 point of advantage for player who has the move
-        let mut eval = if chess_board.get_turn_color() == Color::White {TURN_ADVANTAGE} else {-TURN_ADVANTAGE};
-        
+        let mut eval = if chess_board.get_turn_color() == Color::White {
+            TURN_ADVANTAGE
+        } else {
+            -TURN_ADVANTAGE
+        };
+
         let coord_white_king = chess_board.find_king(Color::White);
         let coord_black_king = chess_board.find_king(Color::Black);
 
@@ -40,7 +42,6 @@ impl Evaluator for KingSafetyEvaluator {
         };
 
         for (coordinate, content) in chess_board.iter_coordinates() {
-            
             if let Some(content) = content {
                 match content.get_color() {
                     Color::White => {
@@ -52,7 +53,7 @@ impl Evaluator for KingSafetyEvaluator {
 
                             eval += ((1.0 - rad - 3. * distance_to_king) / 8.0).exp() * sign;
                         }
-                    },
+                    }
                     Color::Black => {
                         let sign = -1.;
                         for coord in chess_board.squares_attacked_by_piece(&coordinate) {

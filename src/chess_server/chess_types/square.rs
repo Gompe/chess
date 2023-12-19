@@ -1,12 +1,9 @@
-
-
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Square {
-    board_index: u8
+    board_index: u8,
 }
 
 impl Square {
-
     #[inline(always)]
     pub unsafe fn from_coordinates_unchecked(row: i8, col: i8) -> Self {
         let board_index = (row * 8 + col) as u8;
@@ -15,25 +12,22 @@ impl Square {
 
     #[inline(always)]
     pub unsafe fn from_index_unchecked(index: i8) -> Self {
-        Square { board_index: index as u8 }
+        Square {
+            board_index: index as u8,
+        }
     }
 
     pub fn from_coordinates(row: i8, col: i8) -> Option<Self> {
-        if (0..8).contains(&row) && (0..8).contains(&col) 
-        {
-            unsafe {
-                Some(Self::from_coordinates_unchecked(row, col))
-            }
-        } else {    
+        if (0..8).contains(&row) && (0..8).contains(&col) {
+            unsafe { Some(Self::from_coordinates_unchecked(row, col)) }
+        } else {
             None
         }
     }
 
     pub fn from_index(index: i8) -> Option<Self> {
         if (0..64).contains(&index) {
-            unsafe {
-                Some(Self::from_index_unchecked(index))
-            }
+            unsafe { Some(Self::from_index_unchecked(index)) }
         } else {
             None
         }
@@ -56,15 +50,18 @@ impl Square {
 
     pub fn add(&self, d_row: i8, d_col: i8) -> Option<Self> {
         let (row, col) = self.get_coordinates();
-        
+
         let new_row = (row as i16) + (d_row as i16);
         let new_col = (col as i16) + (d_col as i16);
 
         if (0..8).contains(&new_row) && (0..8).contains(&new_col) {
             unsafe {
-                Some(Self::from_coordinates_unchecked(new_row as i8, new_col as i8))
+                Some(Self::from_coordinates_unchecked(
+                    new_row as i8,
+                    new_col as i8,
+                ))
             }
-        } else{
+        } else {
             None
         }
     }
@@ -79,7 +76,7 @@ impl Square {
             'f' | 'F' => 5,
             'g' | 'G' => 6,
             'h' | 'H' => 7,
-            _ => return None
+            _ => return None,
         };
 
         let row = match coordinate[1] {
@@ -91,7 +88,7 @@ impl Square {
             '6' => 2,
             '7' => 1,
             '8' => 0,
-            _ => return None
+            _ => return None,
         };
 
         Square::from_coordinates(row, col)
@@ -109,7 +106,7 @@ impl Square {
             5 => '3',
             6 => '2',
             7 => '1',
-            _ => unreachable!("Panic => Square {}, {}", row, col)
+            _ => unreachable!("Panic => Square {}, {}", row, col),
         };
 
         let char_col = match col {
@@ -121,10 +118,9 @@ impl Square {
             5 => 'f',
             6 => 'g',
             7 => 'h',
-            _ => unreachable!("Panic => Square {}, {}", row, col)
+            _ => unreachable!("Panic => Square {}, {}", row, col),
         };
-    
-        char_col.to_string() + &char_row.to_string()    
-    }
 
+        char_col.to_string() + &char_row.to_string()
+    }
 }

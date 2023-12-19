@@ -1,6 +1,4 @@
-
-
-use crate::chess_server::chess_types::{Color, ChessBoard, ChessStatus};
+use crate::chess_server::chess_types::{ChessBoard, ChessStatus, Color};
 use crate::engines::engine_traits::*;
 
 use ordered_float::OrderedFloat;
@@ -9,17 +7,22 @@ use ordered_float::OrderedFloat;
 pub struct RolloutEvaluator<P: Policy, E: Evaluator> {
     policy: P,
     evaluator: E,
-    max_depth: usize
+    max_depth: usize,
 }
 
-unsafe impl<P: Policy, E: Evaluator> Send for RolloutEvaluator<P, E> 
-where P: Send, E: Send {}
+unsafe impl<P: Policy, E: Evaluator> Send for RolloutEvaluator<P, E>
+where
+    P: Send,
+    E: Send,
+{
+}
 
-unsafe impl<P: Policy, E: Evaluator> Sync for RolloutEvaluator<P, E> 
-where P: Sync, E: Sync {}
-
-
-
+unsafe impl<P: Policy, E: Evaluator> Sync for RolloutEvaluator<P, E>
+where
+    P: Sync,
+    E: Sync,
+{
+}
 
 impl<P: Policy, E: Evaluator> RolloutEvaluator<P, E> {
     pub fn new(policy: P, evaluator: E, max_depth: usize) -> RolloutEvaluator<P, E> {
@@ -27,28 +30,30 @@ impl<P: Policy, E: Evaluator> RolloutEvaluator<P, E> {
             panic!("Max Depth must be positive")
         }
 
-        RolloutEvaluator { policy, evaluator, max_depth }
+        RolloutEvaluator {
+            policy,
+            evaluator,
+            max_depth,
+        }
     }
 }
 
 impl<P: Policy, E: Evaluator> Evaluator for RolloutEvaluator<P, E> {
-
     fn get_name(&self) -> String {
         format!("RolloutEvaluator({})", self.evaluator.get_name())
     }
 
     #[inline(always)]
     fn evaluate(&self, chess_board: &ChessBoard) -> OrderedFloat<f64> {
-        
         let mut chess_board = *chess_board;
 
         let sign = match chess_board.get_turn_color() {
             Color::White => OrderedFloat(1.),
-            Color::Black => OrderedFloat(-1.)
+            Color::Black => OrderedFloat(-1.),
         };
 
         let mut depth = 0;
-        
+
         loop {
             depth += 1;
 
@@ -59,10 +64,11 @@ impl<P: Policy, E: Evaluator> Evaluator for RolloutEvaluator<P, E> {
                 ChessStatus::WhiteWon => return OrderedFloat(1.),
                 ChessStatus::BlackWon => return OrderedFloat(-1.),
                 ChessStatus::Ongoing => {
-                    
                     let priors = self.policy.get_priors(&chess_board, &allowed_moves);
 
-                    let index = (0..priors.len()).max_by_key(|&index| OrderedFloat(priors[index]) * sign).unwrap();
+                    let index = (0..priors.len())
+                        .max_by_key(|&index| OrderedFloat(priors[index]) * sign)
+                        .unwrap();
 
                     let mv = allowed_moves[index];
 
@@ -76,7 +82,5 @@ impl<P: Policy, E: Evaluator> Evaluator for RolloutEvaluator<P, E> {
         }
 
         self.evaluator.evaluate(&chess_board)
-
-
     }
 }

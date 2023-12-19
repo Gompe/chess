@@ -11,7 +11,6 @@ use crate::engines::searchers::*;
 use super::Pokemon;
 
 pub fn pikachu() -> Pokemon {
-
     // Stochastic Rollout Evaluator
     let base_eval = ClampEvaluator::new(
         CaptureEvaluator::new(LinearEvaluator::new(
@@ -62,7 +61,10 @@ pub fn pikachu() -> Pokemon {
     let is_pre_endgame = |chess_board: &ChessBoard| {
         let mut count = 0;
         for index in 0..64 {
-            if chess_board.get_square_content(&Square::from_index(index).unwrap()).is_some() {
+            if chess_board
+                .get_square_content(&Square::from_index(index).unwrap())
+                .is_some()
+            {
                 count += 1;
             }
         }

@@ -1,34 +1,23 @@
-use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
+use std::collections::HashMap;
 
 use std::hash::{Hash, Hasher};
 
-use crate::chess_server::chess_types::{ChessBoard, ColorPiece, Color};
+use crate::chess_server::chess_types::{ChessBoard, Color, ColorPiece};
 use crate::chess_server::chess_types::{
-    WHITE_KING,
-    WHITE_QUEEN,
-    WHITE_ROOK,
-    WHITE_BISHOP,
-    WHITE_KNIGHT,
-    WHITE_PAWN,
-    BLACK_KING,
-    BLACK_QUEEN,
-    BLACK_ROOK,
-    BLACK_BISHOP,
-    BLACK_KNIGHT,
-    BLACK_PAWN,
+    BLACK_BISHOP, BLACK_KING, BLACK_KNIGHT, BLACK_PAWN, BLACK_QUEEN, BLACK_ROOK, WHITE_BISHOP,
+    WHITE_KING, WHITE_KNIGHT, WHITE_PAWN, WHITE_QUEEN, WHITE_ROOK,
 };
 
 const ZOBRIST_SEED: u64 = 0x7f4a_8e2d_2a19_a0c3;
 const TABLE_SIZE: usize = 1 + 12 * 64;
 
 fn init_zobrist(local_state: u64) -> [u64; TABLE_SIZE] {
-
     let mut local_state: u64 = local_state;
     let mut output = [0; TABLE_SIZE];
 
     let mut hasher = DefaultHasher::new();
-    
+
     for index in 0..TABLE_SIZE {
         local_state.hash(&mut hasher);
         local_state = hasher.finish();
@@ -38,7 +27,6 @@ fn init_zobrist(local_state: u64) -> [u64; TABLE_SIZE] {
 
     output
 }
-
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 struct BoardHash {
@@ -63,10 +51,10 @@ impl BoardHash {
                 BLACK_BISHOP => 9,
                 BLACK_KNIGHT => 10,
                 BLACK_PAWN => 11,
-                _ => unreachable!()
+                _ => unreachable!(),
             };
 
-            1 + (index as usize) * 12 + content_indexer 
+            1 + (index as usize) * 12 + content_indexer
         };
 
         if chess_board.get_turn_color() == Color::White {
@@ -86,28 +74,28 @@ impl BoardHash {
 #[derive(Clone)]
 pub struct ZobristHashMap<V> {
     zobrist_table: [u64; TABLE_SIZE],
-    cache: HashMap<BoardHash, V>
+    cache: HashMap<BoardHash, V>,
 }
 
 impl<V> ZobristHashMap<V> {
     pub fn new() -> ZobristHashMap<V> {
-        ZobristHashMap { 
-            zobrist_table : init_zobrist(ZOBRIST_SEED),
-            cache: HashMap::new()
+        ZobristHashMap {
+            zobrist_table: init_zobrist(ZOBRIST_SEED),
+            cache: HashMap::new(),
         }
     }
 
-    pub fn get_key_value(&self, key: &ChessBoard) -> Option<&V>{
+    pub fn get_key_value(&self, key: &ChessBoard) -> Option<&V> {
         let hash_board = BoardHash::new(key, self.zobrist_table);
         match self.cache.get_key_value(&hash_board) {
             Some((_, v)) => Some(v),
-            None => None
+            None => None,
         }
     }
 
-    pub fn get_mut(&mut self, key: &ChessBoard) -> Option<&mut V>{
+    pub fn get_mut(&mut self, key: &ChessBoard) -> Option<&mut V> {
         let hash_board = BoardHash::new(key, self.zobrist_table);
-        self.cache.get_mut(&hash_board) 
+        self.cache.get_mut(&hash_board)
     }
 
     pub fn insert(&mut self, key: &ChessBoard, value: V) {

@@ -1,4 +1,4 @@
-use crate::chess_server::chess_types::{Color, ChessBoard};
+use crate::chess_server::chess_types::{ChessBoard, Color};
 use crate::engines::engine_traits::*;
 
 use ordered_float::OrderedFloat;
@@ -16,19 +16,20 @@ unsafe impl Send for DynamicEvaluator {}
 unsafe impl Sync for DynamicEvaluator {}
 
 impl Evaluator for DynamicEvaluator {
-
     fn get_name(&self) -> String {
         "DynamicEvaluator".to_string()
     }
-    
+
     #[inline(always)]
     fn evaluate(&self, chess_board: &ChessBoard) -> OrderedFloat<f64> {
-        
         // 1 point of advantage for player who has the move
-        let mut eval = if chess_board.get_turn_color() == Color::White {1.0} else {-1.0};
+        let mut eval = if chess_board.get_turn_color() == Color::White {
+            1.0
+        } else {
+            -1.0
+        };
 
         for (coordinate, content) in chess_board.iter_coordinates() {
-            
             if let Some(content) = content {
                 let sign = match content.get_color() {
                     Color::White => 1.,
