@@ -9,4 +9,6 @@ pub mod evaluators;
 pub mod policies;
 pub mod searchers;
 
+pub mod timed_searchers;
+
 pub mod bots;

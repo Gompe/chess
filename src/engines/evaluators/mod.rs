@@ -13,6 +13,7 @@ pub mod stochastic_rollout;
 pub mod structure_evaluator;
 pub mod threshold_evaluator;
 pub mod trivial_evaluator;
+pub mod pesto_evaluator;
 
 pub use cache_evaluator::CacheEvaluator;
 pub use capture_evaluator::CaptureEvaluator;
@@ -29,3 +30,5 @@ pub use stochastic_rollout::StochasticRollout;
 pub use structure_evaluator::StructureEvaluator;
 pub use threshold_evaluator::ThresholdEvaluator;
 pub use trivial_evaluator::TrivialEvaluator;
+pub use pesto_evaluator::PestoEvaluator;
+

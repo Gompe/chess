@@ -11,4 +11,11 @@ impl Color {
             Self::Black => String::from("B"),
         }
     }
+
+    pub fn as_sign(&self) -> f64 {
+        match *self {
+            Color::White => 1.,
+            Color::Black => -1.
+        }
+    }
 }

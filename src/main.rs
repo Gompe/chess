@@ -4,7 +4,7 @@ mod engines;
 use crate::chess_server::chess_types::ChessStatus;
 use crate::chess_server::io::io_player::IOPlayer;
 use crate::chess_server::io::utils::board_to_string;
-use crate::engines::bots::pikachu;
+use crate::engines::bots::{pikachu, darkrai, ninetales, corpish, magikarp, weedle, tepig, pignite};
 use crate::engines::engine_traits::Evaluator;
 use crate::engines::evaluators::TrivialEvaluator;
 
@@ -44,16 +44,12 @@ fn main() {
 
     file.write_all(s.as_bytes()).unwrap();
 
-    let player_white = pikachu();
-    let player_black = pikachu();
+    let player_white = pignite();
 
-    // let player_white = player_black.clone();
+    let player_black = tepig();
 
     let player_io = IOPlayer::new();
-    // let engine_player = player_white;
-
-    // let engine_player = RandomEngine::new();
-
+    
     let engine_color = match s.trim() {
         "white" => Color::White,
         "black" => Color::Black,
