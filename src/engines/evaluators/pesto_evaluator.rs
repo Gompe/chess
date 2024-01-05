@@ -1,6 +1,6 @@
 use ordered_float::OrderedFloat;
 
-use crate::{engines::engine_traits::*, chess_server::chess_types::{Square, Color, Piece}};
+use crate::{engines::engine_traits::*, backend::{Square, Color, Piece}};
 
 #[derive(Clone)]
 pub struct PestoEvaluator;
@@ -258,7 +258,7 @@ impl Evaluator for PestoEvaluator {
         "PestoEvaluator".into()
     }
 
-    fn evaluate(&self, chess_board: &crate::chess_server::chess_types::ChessBoard) -> ordered_float::OrderedFloat<f64> {
+    fn evaluate(&self, chess_board: &crate::backend::ChessBoard) -> ordered_float::OrderedFloat<f64> {
         let mut mg = [0, 0];
         let mut eg = [0, 0];
         let mut game_phase = 0;

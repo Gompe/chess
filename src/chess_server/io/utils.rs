@@ -1,4 +1,4 @@
-use crate::chess_server::chess_types::*;
+use crate::backend::*;
 
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};

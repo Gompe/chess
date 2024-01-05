@@ -1,9 +1,9 @@
-use crate::chess_server::chess_types::ChessStatus;
-use crate::chess_server::chess_types::Color;
-use crate::chess_server::chess_types::Piece;
-use crate::chess_server::chess_types::chess_board;
-use crate::chess_server::chess_types::chess_move::BitMove;
-use crate::chess_server::chess_types::color_piece;
+use crate::backend::ChessStatus;
+use crate::backend::Color;
+use crate::backend::Piece;
+use crate::backend::chess_board;
+use crate::backend::chess_move::BitMove;
+use crate::backend::color_piece;
 use crate::engines::engine_traits::*;
 
 use crate::engines::evaluators::CaptureEvaluator;
@@ -14,8 +14,8 @@ use std::marker::PhantomData;
 use std::time::Duration;
 use std::time::Instant;
 
-use crate::chess_server::chess_types::ChessBoard;
-use crate::chess_server::chess_types::Move;
+use crate::backend::ChessBoard;
+use crate::backend::Move;
 
 use log::info;
 use ordered_float::OrderedFloat;

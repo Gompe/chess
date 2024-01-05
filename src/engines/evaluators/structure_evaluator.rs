@@ -1,4 +1,4 @@
-use crate::chess_server::chess_types::{ChessBoard, Color};
+use crate::backend::{ChessBoard, Color};
 use crate::engines::engine_traits::*;
 
 use ordered_float::OrderedFloat;

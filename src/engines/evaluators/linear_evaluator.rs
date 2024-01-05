@@ -1,6 +1,6 @@
 use crate::engines::engine_traits::*;
 
-use crate::chess_server::chess_types::ChessBoard;
+use crate::backend::ChessBoard;
 use ordered_float::OrderedFloat;
 
 #[derive(Clone)]

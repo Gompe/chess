@@ -22,3 +22,6 @@ pub use chess_move::Move;
 
 pub mod chess_board;
 pub use chess_board::ChessBoard;
+
+pub mod chess_game;
+pub use chess_game::ChessGame;

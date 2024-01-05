@@ -1,4 +1,4 @@
-use crate::chess_server::chess_types::{ChessBoard, ChessStatus};
+use crate::backend::{ChessBoard, ChessStatus};
 use crate::engines::engine_traits::*;
 
 use ordered_float::OrderedFloat;

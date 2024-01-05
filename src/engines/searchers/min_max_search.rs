@@ -1,10 +1,10 @@
-use crate::chess_server::chess_types::ChessStatus;
-use crate::chess_server::chess_types::Color;
+use crate::backend::ChessStatus;
+use crate::backend::Color;
 use crate::engines::engine_traits::*;
 use std::marker::PhantomData;
 
-use crate::chess_server::chess_types::ChessBoard;
-use crate::chess_server::chess_types::Move;
+use crate::backend::ChessBoard;
+use crate::backend::Move;
 
 use ordered_float::OrderedFloat;
 

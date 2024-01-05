@@ -1,5 +1,5 @@
-use crate::chess_server::chess_types::chess_board::{MoveContainer, MOVE_CONTAINER_SIZE};
-use crate::chess_server::chess_types::{ChessBoard, Move};
+use crate::backend::chess_board::{MoveContainer, MOVE_CONTAINER_SIZE};
+use crate::backend::{ChessBoard, Move};
 use crate::chess_server::game::Player;
 
 use ordered_float::OrderedFloat;

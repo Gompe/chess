@@ -1,17 +1,17 @@
 use std::borrow::BorrowMut;
 use std::cell::RefCell;
 
-use crate::chess_server::chess_types::ChessStatus;
-use crate::chess_server::chess_types::Color;
-use crate::chess_server::chess_types::Piece;
+use crate::backend::ChessStatus;
+use crate::backend::Color;
+use crate::backend::Piece;
 use crate::engines::engine_traits::*;
 
 use std::cmp::max;
 use std::cmp::min;
 use std::marker::PhantomData;
 
-use crate::chess_server::chess_types::ChessBoard;
-use crate::chess_server::chess_types::Move;
+use crate::backend::ChessBoard;
+use crate::backend::Move;
 
 use log::info;
 use ordered_float::OrderedFloat;

@@ -1,4 +1,4 @@
-use crate::chess_server::chess_types::{ChessBoard, Move};
+use crate::backend::{ChessBoard, Move};
 use crate::chess_server::game::Player;
 
 // 0.6.1

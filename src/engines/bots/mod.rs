@@ -1,6 +1,8 @@
 pub mod pokemon;
 pub use pokemon::Pokemon;
 
+pub mod pokedex;
+
 pub mod pikachu;
 pub use pikachu::pikachu;
 

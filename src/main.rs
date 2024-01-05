@@ -1,14 +1,15 @@
 mod chess_server;
 mod engines;
+mod backend;
 
-use crate::chess_server::chess_types::ChessStatus;
+use backend::*;
+
 use crate::chess_server::io::io_player::IOPlayer;
 use crate::chess_server::io::utils::board_to_string;
-use crate::engines::bots::{pikachu, darkrai, ninetales, corpish, magikarp, weedle, tepig, pignite};
+use crate::engines::bots::pokedex::{self, Pokedex};
 use crate::engines::engine_traits::Evaluator;
 use crate::engines::evaluators::TrivialEvaluator;
 
-use chess_server::chess_types::{ChessBoard, Color};
 
 use engines::evaluators::{
     CacheEvaluator, CaptureEvaluator, DynamicEvaluator, KingSafetyEvaluator, LinearEvaluator,
@@ -44,9 +45,10 @@ fn main() {
 
     file.write_all(s.as_bytes()).unwrap();
 
-    let player_white = pignite();
-
-    let player_black = tepig();
+    let pokedex = Pokedex::new();
+    
+    let player_white = pokedex.load_pokemon("pignite").unwrap();
+    let player_black = pokedex.load_pokemon("tepig").unwrap();
 
     let player_io = IOPlayer::new();
     

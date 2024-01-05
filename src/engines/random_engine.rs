@@ -1,4 +1,4 @@
-use crate::chess_server::chess_types::{ChessBoard, Move};
+use crate::backend::{ChessBoard, Move};
 use crate::chess_server::game::Player;
 
 use rand::{rngs::ThreadRng, seq::SliceRandom, thread_rng}; // 0.6.1

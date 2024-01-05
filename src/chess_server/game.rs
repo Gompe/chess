@@ -1,4 +1,4 @@
-use crate::chess_server::chess_types::{ChessBoard, ChessStatus, Color, Move};
+use crate::backend::{ChessBoard, ChessStatus, Color, Move};
 
 pub trait Player {
     fn select_move(&self, chess_board: &ChessBoard) -> Move;
