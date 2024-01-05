@@ -31,7 +31,7 @@ fn main() {
 
     stdin().read_line(&mut s).expect("Crashed first stdin");
 
-    let mut file = File::create(s.clone() + ".txt").unwrap();
+    let mut file = File::create(s.clone().trim().to_owned() + ".txt").unwrap();
 
     let rand_filename = chess_server::io::utils::random_string(8);
 
@@ -40,7 +40,7 @@ fn main() {
         .unwrap();
 
     // Initialize the logger with the file as the output
-    simple_logging::log_to_file(s.clone() + ".txt", LevelFilter::Info).unwrap();
+    simple_logging::log_to_file(s.clone().trim().to_owned() + ".txt", LevelFilter::Info).unwrap();
 
     file.write_all(s.as_bytes()).unwrap();
 

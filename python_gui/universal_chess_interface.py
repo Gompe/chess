@@ -197,29 +197,39 @@ class UniversalChessInterface:
         
         while True:
             if turn == WHITE:
-                print("[WHITE EMIT MOVE]")
-                move = self.player_white.emit_move()
-                print("[WHITE EMIT MOVE/]")
-                print()
-                
-                if move is None:
-                    print("Game Over")
-                    return
-                
-                print("[Loop] Move:", move, flush=True)
-                move = parse_move(move, is_color_white=True)
-                
-                print(move)
-                print()
-                
-                chessboard.make_move(move)
-                
-                print("[BLACK RECEIVE MOVE]")
-                move = move_to_str(move)
-                self.player_black.receive_move(move)
-                print("[BLACK RECEIVE MOVE/]")
-                
-                turn = BLACK
+                try:
+                    print("[WHITE EMIT MOVE]")
+                    move = self.player_white.emit_move()
+                    print("[WHITE EMIT MOVE/]")
+                    print()
+                    
+                    if move is None:
+                        print("Game Over")
+                        return
+                    
+                    print("[Loop] Move:", move, flush=True)
+                    move = parse_move(move, is_color_white=True)
+                    
+                    print(move)
+                    print()
+                    
+                    chessboard.make_move(move)
+                    
+                    print("[BLACK RECEIVE MOVE]")
+                    move = move_to_str(move)
+                    self.player_black.receive_move(move)
+                    print("[BLACK RECEIVE MOVE/]")
+                    
+                    turn = BLACK
+                except AssertionError as e:
+                    rust: RustProcessInterface = self.player_white
+                    
+                    print("[WHITE EXCEPTION]")
+                    
+                    print("stdout:\n", rust.proc.stderr.read())
+                    print("stderr:\n", rust.proc.stderr.read())
+                    
+                    sys.exit(1)
             
             else:
                 print("[BLACK EMIT MOVE]")
