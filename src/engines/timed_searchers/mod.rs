@@ -5,3 +5,5 @@ pub mod clunky_searcher;
 pub mod clunky_searcher_v2;
 pub mod clunky_searcher_v3;
 pub mod clunky_searcher_v4;
+pub mod clunky_searcher_v5;
+pub mod clunky_searcher_v6;
